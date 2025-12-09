@@ -61,7 +61,7 @@ export const loginUser = async (req, res) => {
     if (!email || !password || !role)
       return res.status(400).json({ message: "All fields are required." });
 
-    const user = await User.findOne({ email, role });
+    const user = await User.findOne({ email, role }).select("-password");
     if (!user) return res.status(404).json({ message: "User not found." });
 
     if (user.status !== "Active") {
