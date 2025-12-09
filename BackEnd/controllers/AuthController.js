@@ -61,7 +61,7 @@ export const loginUser = async (req, res) => {
     if (!email || !password || !role)
       return res.status(400).json({ message: "All fields are required." });
 
-    const user = await User.findOne({ email, role }).select("-password");
+    const user = await User.findOne({ email, role });
     if (!user) return res.status(404).json({ message: "User not found." });
 
     if (user.status !== "Active") {
@@ -95,7 +95,7 @@ export const loginUser = async (req, res) => {
 // ✅ Check Auth (auto-login if cookie valid)
 export const checkAuth = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password");
+    const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: "User not found." });
     res.json({ message: "User authenticated", user });
   } catch (err) {

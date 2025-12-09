@@ -798,7 +798,7 @@ export const updateDuration = async (req, res) => {
 
 export const InternIncharges = async (req, res) => {
   try {
-    const incharges = await InternIncharge.find().select("-password"); // exclude password
+    const incharges = await InternIncharge.find(); // exclude password
     res.status(200).json({ success: true, incharges });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error" });
@@ -1330,13 +1330,19 @@ export const getDepartments = async (req, res) => {
 // In your backend controller file
 export const getLeaves = async (req, res) => {
   try {
-    const leaves = await Leave.find({ internId: { $ne: null } }) // Add this filter
-      .populate('internId', 'fullName email mobile domain status')
+    const leaves = await Leave.find()
+      .populate({
+        path: 'internId',
+        select: 'fullName email mobile domain status'
+      })
       .sort({ createdAt: -1 });
+
+    // ✅ remove leaves whose intern is deleted / not found
+    const validLeaves = leaves.filter(leave => leave.internId !== null);
 
     res.json({
       success: true,
-      leaves
+      leaves: validLeaves
     });
 
   } catch (error) {
@@ -1346,7 +1352,8 @@ export const getLeaves = async (req, res) => {
       message: 'Failed to fetch leaves'
     });
   }
-}
+};
+
 
 
 

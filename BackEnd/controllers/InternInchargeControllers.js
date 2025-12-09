@@ -83,7 +83,7 @@ export const loginInternIncharge = async (req, res) => {
     }
 
     // ✅ Step 2: Find intern incharge
-    const internIncharge = await InternIncharge.findOne({ email }).select("-password");
+    const internIncharge = await InternIncharge.findOne({ email });
     if (!internIncharge)
       return res.status(401).json({ success: false, message: "Invalid email or password", });
 
@@ -166,7 +166,7 @@ export const checkInternInchargeAuth = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "intern_incharge_secret");
 
     // Find user
-    const internIncharge = await InternIncharge.findById(decoded.id).select("-password");
+    const internIncharge = await InternIncharge.findById(decoded.id);
 
     if (!internIncharge) {
       return res.status(401).json({
