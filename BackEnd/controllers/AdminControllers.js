@@ -1327,9 +1327,10 @@ export const getDepartments = async (req, res) => {
 
 
 
+// In your backend controller file
 export const getLeaves = async (req, res) => {
   try {
-    const leaves = await Leave.find()
+    const leaves = await Leave.find({ internId: { $ne: null } }) // Add this filter
       .populate('internId', 'fullName email mobile domain status')
       .sort({ createdAt: -1 });
 

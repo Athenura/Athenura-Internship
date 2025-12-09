@@ -725,8 +725,14 @@ export const MeetingData = async (req, res) => {
 
     // Filter by department and format data
     const filteredRecords = attendanceRecords
-      .filter(record => record.intern && record.intern.domain === department)
-      .map(record => ({
+      .filter(record =>
+        record.intern &&
+        record.intern.domain &&
+        (
+          record.intern.domain.toLowerCase().includes(department.toLowerCase()) ||
+          department.toLowerCase().includes(record.intern.domain.toLowerCase())
+        )
+      ).map(record => ({
         internName: record.intern.fullName,
         internId: record.intern.uniqueId,
         email: record.intern.email,
@@ -1060,11 +1066,11 @@ export const updateInternPerformance = async (req, res) => {
 export const LeaveRequests = async (req, res) => {
   try {
     const incharge = req.user;
-     const today = new Date();
+    const today = new Date();
 
     const leaves = await Leave.find({
       status: { $in: ['Pending', 'Approved'] },
-      endDate: { $gte: today } 
+      endDate: { $gte: today }
     })
       .populate('internId', 'fullName uniqueId domain mobile email')
       .sort({ createdAt: -1 });

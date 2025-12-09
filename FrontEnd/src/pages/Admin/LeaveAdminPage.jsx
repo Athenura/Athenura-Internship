@@ -39,6 +39,15 @@ const AdminLeavesPage = () => {
         fetchAllLeaves();
     }, []);
 
+    // Check for invalid data after leaves are fetched
+    useEffect(() => {
+        if (leaves.length > 0) {
+            const invalidLeaves = leaves.filter(leave => !leave.internId);
+            if (invalidLeaves.length > 0) {
+                console.warn(`Found ${invalidLeaves.length} leaves with missing intern data.`);
+            }
+        }
+    }, [leaves]);
 
     const fetchAllLeaves = async () => {
         try {
@@ -71,9 +80,13 @@ const AdminLeavesPage = () => {
 
     const handleLeaveAction = async (leaveId, action) => {
         const leave = leaves.find(l => l._id === leaveId);
+        
+        // Safely get intern name with fallback
+        const internName = leave?.internId?.fullName || 'Unknown Intern';
+        
         const confirmMessage = action === 'approve'
-            ? `Are you sure you want to APPROVE the leave request for ${leave.internId.fullName}?`
-            : `Are you sure you want to REJECT the leave request for ${leave.internId.fullName}?`;
+            ? `Are you sure you want to APPROVE the leave request for ${internName}?`
+            : `Are you sure you want to REJECT the leave request for ${internName}?`;
 
         if (!window.confirm(confirmMessage)) return;
 
@@ -132,19 +145,22 @@ const AdminLeavesPage = () => {
             'Applied Date'
         ];
 
-        const csvData = filteredLeaves.map(leave => [
-            leave.internId.fullName,
-            leave.uniqueId,
-            leave.internId.email,
-            leave.internId.domain,
-            leave.leaveType,
-            new Date(leave.startDate).toLocaleDateString(),
-            new Date(leave.endDate).toLocaleDateString(),
-            leave.totalDays,
-            `"${leave.reason.replace(/"/g, '""')}"`,
-            leave.status,
-            new Date(leave.createdAt).toLocaleDateString()
-        ]);
+        const csvData = filteredLeaves.map(leave => {
+            const intern = leave.internId || {};
+            return [
+                intern.fullName || 'Unknown',
+                leave.uniqueId || 'N/A',
+                intern.email || 'N/A',
+                intern.domain || 'N/A',
+                leave.leaveType || 'Unknown',
+                new Date(leave.startDate).toLocaleDateString(),
+                new Date(leave.endDate).toLocaleDateString(),
+                leave.totalDays || 0,
+                `"${(leave.reason || '').replace(/"/g, '""')}"`,
+                leave.status || 'Unknown',
+                new Date(leave.createdAt).toLocaleDateString()
+            ];
+        });
 
         const csvContent = [
             headers.join(','),
@@ -161,17 +177,26 @@ const AdminLeavesPage = () => {
     };
 
     const filteredLeaves = leaves.filter(leave => {
+        // Skip leaves with null internId
+        if (!leave.internId) return false;
+        
+        // Safely get intern properties with fallbacks
+        const internName = leave.internId.fullName || '';
+        const uniqueId = leave.uniqueId || '';
+        const internEmail = leave.internId.email || '';
+        const internDomain = leave.internId.domain || '';
+
         const matchesSearch =
-            leave.internId.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            leave.uniqueId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            leave.internId.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            leave.internId.domain?.toLowerCase().includes(searchTerm.toLowerCase());
+            internName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            uniqueId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            internEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            internDomain.toLowerCase().includes(searchTerm.toLowerCase());
 
         const matchesStatus = !statusFilter || leave.status === statusFilter;
         const matchesType = !typeFilter || leave.leaveType === typeFilter;
 
         const matchesDate = !dateFilter ||
-            new Date(leave.startDate).toISOString().split('T')[0] === dateFilter;
+            (leave.startDate && new Date(leave.startDate).toISOString().split('T')[0] === dateFilter);
 
         return matchesSearch && matchesStatus && matchesType && matchesDate;
     });
@@ -195,7 +220,9 @@ const AdminLeavesPage = () => {
     };
 
     const getLeaveTypeColor = (type) => {
-        switch (type?.toLowerCase()) {
+        if (!type) return "bg-gray-50 text-gray-700 border border-gray-200";
+        
+        switch (type.toLowerCase()) {
             case "sick": return "bg-red-50 text-red-700 border border-red-200";
             case "casual": return "bg-blue-50 text-blue-700 border border-blue-200";
             case "emergency": return "bg-orange-50 text-orange-700 border border-orange-200";
@@ -356,6 +383,19 @@ const AdminLeavesPage = () => {
                             <option value="Other">📝 Other</option>
                         </select>
                     </div>
+                    
+                    {/* Date Filter */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Start Date
+                        </label>
+                        <input
+                            type="date"
+                            value={dateFilter}
+                            onChange={(e) => setDateFilter(e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
+                        />
+                    </div>
                 </div>
 
                 {/* Active Filters Indicator */}
@@ -427,166 +467,175 @@ const AdminLeavesPage = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredLeaves.map((leave) => (
-                                    <React.Fragment key={leave._id}>
-                                        <tr className="hover:bg-gray-50 transition-colors duration-150 group cursor-pointer" onClick={() => toggleExpandLeave(leave._id)}>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center space-x-4">
-                                                    <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
-                                                        <User size={20} className="text-white" />
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className="font-semibold text-gray-900 text-sm">{leave.internId.fullName}</p>
-                                                        <p className="text-xs text-gray-500 mt-1">ID: {leave.uniqueId}</p>
-                                                        <div className="flex items-center gap-2 mt-2">
-                                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getLeaveTypeColor(leave.leaveType)}`}>
-                                                                {leave.leaveType}
-                                                            </span>
-                                                            <span className="inline-flex px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold border border-blue-200">
-                                                                {leave.internId.domain}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center space-x-2 text-sm text-gray-700">
-                                                        <Mail size={14} className="text-gray-400" />
-                                                        <span className="font-medium">{leave.internId.email}</span>
-                                                    </div>
-                                                    <div className="flex items-center space-x-2 text-sm text-gray-700">
-                                                        <Phone size={14} className="text-gray-400" />
-                                                        <span className="font-medium">{leave.internId.mobile}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center space-x-2 text-sm text-gray-700">
-                                                        <Calendar size={14} className="text-gray-400" />
-                                                        <span className="font-medium">
-                                                            {new Date(leave.startDate).toLocaleDateString()}
-                                                        </span>
-                                                    </div>
-                                                    <div className="text-xs text-gray-500">
-                                                        to {new Date(leave.endDate).toLocaleDateString()}
-                                                    </div>
-                                                    <div className="text-xs font-semibold text-blue-600">
-                                                        {leave.totalDays} day{leave.totalDays !== 1 ? 's' : ''}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    {getStatusIcon(leave.status)}
-                                                    <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${getStatusColor(leave.status)}`}>
-                                                        {leave.status}
-                                                    </span>
-                                                </div>
-                                                <div className="text-xs text-gray-500 mt-1">
-                                                    Applied: {new Date(leave.createdAt).toLocaleDateString()}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    {leave.status === "Pending" && (
-                                                        <>
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleLeaveAction(leave._id, 'approve');
-                                                                }}
-                                                                disabled={actionLoading === leave._id}
-                                                                className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg text-sm font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-                                                            >
-                                                                {actionLoading === leave._id ? (
-                                                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                                                                ) : (
-                                                                    <CheckCircle size={14} />
-                                                                )}
-                                                                Approve
-                                                            </button>
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleLeaveAction(leave._id, 'reject');
-                                                                }}
-                                                                disabled={actionLoading === leave._id}
-                                                                className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg text-sm font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-                                                            >
-                                                                {actionLoading === leave._id ? (
-                                                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                                                                ) : (
-                                                                    <XCircle size={14} />
-                                                                )}
-                                                                Reject
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                    {leave.status !== "Pending" && (
-                                                        <span className="text-xs text-gray-500 italic">
-                                                            Processed
-                                                        </span>
-                                                    )}
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            toggleExpandLeave(leave._id);
-                                                        }}
-                                                        className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                                                    >
-                                                        {expandedLeave === leave._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                filteredLeaves.map((leave) => {
+                                    // Safely extract intern data with fallbacks
+                                    const intern = leave.internId || {};
+                                    const internName = intern.fullName || 'Unknown Intern';
+                                    const internEmail = intern.email || 'No email';
+                                    const internMobile = intern.mobile || 'No phone';
+                                    const internDomain = intern.domain || 'No domain';
 
-                                        {/* Expanded Details */}
-                                        {expandedLeave === leave._id && (
-                                            <tr>
-                                                <td colSpan="5" className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                                        {/* Leave Details */}
-                                                        <div>
-                                                            <h4 className="font-semibold text-gray-900 mb-3">Leave Details</h4>
-                                                            <div className="space-y-2">
-                                                                <div className="flex justify-between">
-                                                                    <span className="text-sm text-gray-600">Leave Type:</span>
-                                                                    <span className="text-sm font-semibold">{leave.leaveType}</span>
-                                                                </div>
-                                                                <div className="flex justify-between">
-                                                                    <span className="text-sm text-gray-600">Duration:</span>
-                                                                    <span className="text-sm font-semibold">{leave.totalDays} day{leave.totalDays !== 1 ? 's' : ''}</span>
-                                                                </div>
-                                                                <div className="flex justify-between">
-                                                                    <span className="text-sm text-gray-600">Start Date:</span>
-                                                                    <span className="text-sm font-semibold">{new Date(leave.startDate).toLocaleDateString()}</span>
-                                                                </div>
-                                                                <div className="flex justify-between">
-                                                                    <span className="text-sm text-gray-600">End Date:</span>
-                                                                    <span className="text-sm font-semibold">{new Date(leave.endDate).toLocaleDateString()}</span>
-                                                                </div>
-                                                                <div className="flex justify-between">
-                                                                    <span className="text-sm text-gray-600">Applied On:</span>
-                                                                    <span className="text-sm font-semibold">{new Date(leave.createdAt).toLocaleDateString()}</span>
-                                                                </div>
-                                                            </div>
+                                    return (
+                                        <React.Fragment key={leave._id}>
+                                            <tr className="hover:bg-gray-50 transition-colors duration-150 group cursor-pointer" onClick={() => toggleExpandLeave(leave._id)}>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center space-x-4">
+                                                        <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+                                                            <User size={20} className="text-white" />
                                                         </div>
-
-                                                        {/* Reason */}
-                                                        <div>
-                                                            <h4 className="font-semibold text-gray-900 mb-3">Reason</h4>
-                                                            <div className="bg-white p-4 rounded-xl border border-gray-200">
-                                                                <p className="text-sm text-gray-700 leading-relaxed">{leave.reason}</p>
+                                                        <div className="flex-1">
+                                                            <p className="font-semibold text-gray-900 text-sm">{internName}</p>
+                                                            <p className="text-xs text-gray-500 mt-1">ID: {leave.uniqueId || 'N/A'}</p>
+                                                            <div className="flex items-center gap-2 mt-2">
+                                                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getLeaveTypeColor(leave.leaveType)}`}>
+                                                                    {leave.leaveType || 'Unknown Type'}
+                                                                </span>
+                                                                <span className="inline-flex px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold border border-blue-200">
+                                                                    {internDomain}
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="space-y-1">
+                                                        <div className="flex items-center space-x-2 text-sm text-gray-700">
+                                                            <Mail size={14} className="text-gray-400" />
+                                                            <span className="font-medium">{internEmail}</span>
+                                                        </div>
+                                                        <div className="flex items-center space-x-2 text-sm text-gray-700">
+                                                            <Phone size={14} className="text-gray-400" />
+                                                            <span className="font-medium">{internMobile}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="space-y-1">
+                                                        <div className="flex items-center space-x-2 text-sm text-gray-700">
+                                                            <Calendar size={14} className="text-gray-400" />
+                                                            <span className="font-medium">
+                                                                {leave.startDate ? new Date(leave.startDate).toLocaleDateString() : 'N/A'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="text-xs text-gray-500">
+                                                            to {leave.endDate ? new Date(leave.endDate).toLocaleDateString() : 'N/A'}
+                                                        </div>
+                                                        <div className="text-xs font-semibold text-blue-600">
+                                                            {leave.totalDays || 0} day{leave.totalDays !== 1 ? 's' : ''}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        {getStatusIcon(leave.status)}
+                                                        <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${getStatusColor(leave.status)}`}>
+                                                            {leave.status || 'Unknown'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 mt-1">
+                                                        Applied: {leave.createdAt ? new Date(leave.createdAt).toLocaleDateString() : 'N/A'}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        {leave.status === "Pending" && (
+                                                            <>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleLeaveAction(leave._id, 'approve');
+                                                                    }}
+                                                                    disabled={actionLoading === leave._id}
+                                                                    className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg text-sm font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                                                                >
+                                                                    {actionLoading === leave._id ? (
+                                                                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                                                                    ) : (
+                                                                        <CheckCircle size={14} />
+                                                                    )}
+                                                                    Approve
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleLeaveAction(leave._id, 'reject');
+                                                                    }}
+                                                                    disabled={actionLoading === leave._id}
+                                                                    className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg text-sm font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                                                                >
+                                                                    {actionLoading === leave._id ? (
+                                                                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                                                                    ) : (
+                                                                        <XCircle size={14} />
+                                                                    )}
+                                                                    Reject
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                        {leave.status !== "Pending" && (
+                                                            <span className="text-xs text-gray-500 italic">
+                                                                Processed
+                                                            </span>
+                                                        )}
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleExpandLeave(leave._id);
+                                                            }}
+                                                            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                                                        >
+                                                            {expandedLeave === leave._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                                        </button>
+                                                    </div>
+                                                </td>
                                             </tr>
-                                        )}
-                                    </React.Fragment>
-                                ))
+
+                                            {/* Expanded Details */}
+                                            {expandedLeave === leave._id && (
+                                                <tr>
+                                                    <td colSpan="5" className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                                            {/* Leave Details */}
+                                                            <div>
+                                                                <h4 className="font-semibold text-gray-900 mb-3">Leave Details</h4>
+                                                                <div className="space-y-2">
+                                                                    <div className="flex justify-between">
+                                                                        <span className="text-sm text-gray-600">Leave Type:</span>
+                                                                        <span className="text-sm font-semibold">{leave.leaveType || 'Unknown'}</span>
+                                                                    </div>
+                                                                    <div className="flex justify-between">
+                                                                        <span className="text-sm text-gray-600">Duration:</span>
+                                                                        <span className="text-sm font-semibold">{leave.totalDays || 0} day{leave.totalDays !== 1 ? 's' : ''}</span>
+                                                                    </div>
+                                                                    <div className="flex justify-between">
+                                                                        <span className="text-sm text-gray-600">Start Date:</span>
+                                                                        <span className="text-sm font-semibold">{leave.startDate ? new Date(leave.startDate).toLocaleDateString() : 'N/A'}</span>
+                                                                    </div>
+                                                                    <div className="flex justify-between">
+                                                                        <span className="text-sm text-gray-600">End Date:</span>
+                                                                        <span className="text-sm font-semibold">{leave.endDate ? new Date(leave.endDate).toLocaleDateString() : 'N/A'}</span>
+                                                                    </div>
+                                                                    <div className="flex justify-between">
+                                                                        <span className="text-sm text-gray-600">Applied On:</span>
+                                                                        <span className="text-sm font-semibold">{leave.createdAt ? new Date(leave.createdAt).toLocaleDateString() : 'N/A'}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Reason */}
+                                                            <div>
+                                                                <h4 className="font-semibold text-gray-900 mb-3">Reason</h4>
+                                                                <div className="bg-white p-4 rounded-xl border border-gray-200">
+                                                                    <p className="text-sm text-gray-700 leading-relaxed">{leave.reason || 'No reason provided'}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </React.Fragment>
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>
