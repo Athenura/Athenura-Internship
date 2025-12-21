@@ -4,7 +4,7 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { sendEmail } from "../config/emailConfig.js"
 import Attendance from "../models/Attendance.js"
-import Performance from "../models/Performance.js"
+import Performance from "../models/Performance.js"  
 import Leave from "../models/LeaveDB.js"
 
 export const registerInternIncharge = async (req, res) => {
@@ -1101,6 +1101,7 @@ export const approvedLeaveStatus = async (req, res) => {
     const { leaveId } = req.params;
 
     const leave = await Leave.findById(leaveId).populate('internId');
+    const intern = await Intern.findById(leave.internId);
 
     if (!leave) {
       return res.status(404).json({
@@ -1111,6 +1112,8 @@ export const approvedLeaveStatus = async (req, res) => {
 
     // Update leave status
     leave.status = 'Approved';
+    intern.leavesTaken = (intern.leavesTaken || 0) + leave.totalDays;
+    await intern.save();
     await leave.save();
 
     // Send approval email to intern
