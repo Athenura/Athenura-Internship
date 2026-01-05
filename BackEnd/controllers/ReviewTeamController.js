@@ -386,30 +386,29 @@ export const exportFeedbacks = async (req, res) => {
 
 export class CertificateGenerator {
   // 🆔 Generate auto-incremented certificate number (Fixed)
-static async generateCertificateNumber() {
-  try {
-    let newNumber;
-    let isDuplicate = true;
+  static async generateCertificateNumber() {
+    try {
+      let newNumber;
+      let isDuplicate = true;
 
-    // Keep generating until a unique one is found
-    while (isDuplicate) {
-      // 🔹 Generate a random 9-digit number starting with 10016
-      const randomPart = Math.floor(10000 + Math.random() * 89999); // 5 random digits
-      newNumber = `10016${randomPart}`; // e.g. 1001653842 (total 9 digits)
+      // Keep generating until a unique one is found
+      while (isDuplicate) {
+        // 🔹 Generate a random 9-digit number starting with 10016
+        const randomPart = Math.floor(10000 + Math.random() * 89999); // 5 random digits
+        newNumber = `10016${randomPart}`; // e.g. 1001653842 (total 9 digits)
 
-      // 🔍 Check in DB if it already exists
-      const existing = await Intern.findOne({ certificateNumber: newNumber });
-      if (!existing) isDuplicate = false;
+        // 🔍 Check in DB if it already exists
+        const existing = await Intern.findOne({ certificateNumber: newNumber });
+        if (!existing) isDuplicate = false;
+      }
+
+      return newNumber;
+    } catch (error) {
+      console.error("❌ Error generating certificate number:", error);
+      // Fallback — unique pattern
+      return `100${Date.now().toString().slice(-6)}`;
     }
-
-    return newNumber;
-  } catch (error) {
-    console.error("❌ Error generating certificate number:", error);
-    // Fallback — unique pattern
-    return `100${Date.now().toString().slice(-6)}`;
   }
-}
-
 
   // ✅ Check if certificate already exists
   static async getExistingCertificate(internEmail) {
@@ -612,12 +611,165 @@ static async generateCertificateNumber() {
       throw new Error(`Failed to send certificate email: ${error.message}`);
     }
   }
+
+  // ✉️ Send rejection email
+  static async sendRejectionEmail(internEmail, internName, feedbackId, rejectionReason = null) {
+    try {
+      const subject = `📝 Update Regarding Your Internship Certificate Request`;
+      
+const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+    .header { background: linear-gradient(135deg, #ff6b6b, #ff8e53); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+    .content { padding: 20px; }
+    .footer { text-align: center; padding: 20px; color: #666; }
+    .reason-box { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; }
+    .action-box { background-color: #e7f3ff; border-left: 4px solid #0d6efd; padding: 15px; margin: 15px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>📝 Certificate Request Update</h2>
+      <p>Action required to proceed further</p>
+    </div>
+    <div class="content">
+      <p>Dear <strong>${internName}</strong>,</p>
+
+      <p>We have reviewed your request for an internship completion certificate at <strong>Graphura India Pvt. Ltd.</strong></p>
+
+      <p>After careful review, we found that your submission requires corrections. Therefore, your certificate request <strong>has not been approved at this time</strong>.</p>
+
+      ${rejectionReason ? `
+      <div class="reason-box">
+        <h4>Feedback / Reason:</h4>
+        <p>${rejectionReason}</p>
+      </div>
+      ` : ''}
+
+      <div class="action-box">
+        <h4>Required Action:</h4>
+        <p>Please <strong>fill out and submit the feedback form again</strong> by addressing the points mentioned above.  
+        Your certificate request will be reconsidered once the updated feedback is reviewed.</p>
+      </div>
+
+      <p><strong>Next Steps:</strong></p>
+      <ul>
+        <li>Review the feedback carefully</li>
+        <li>Re-submit the feedback form with correct details</li>
+        <li>Request ID: <strong>${feedbackId}</strong></li>
+      </ul>
+
+      <p>If you believe there has been any mistake or need clarification, please contact your supervisor or support team.</p>
+    </div>
+    <div class="footer">
+      <p>Best regards,<br><strong>Team Graphura</strong></p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+
+      const emailData = {
+        sender: { name: "Graphura", email: process.env.FROM_EMAIL },
+        to: [{ email: internEmail }],
+        subject,
+        htmlContent,
+      };
+
+      const response = await axios.post("https://api.brevo.com/v3/smtp/email", emailData, {
+        headers: {
+          "api-key": process.env.BREVO_API_KEY,
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("✅ Rejection email sent successfully");
+      return response.data;
+    } catch (error) {
+      console.error("❌ Rejection email sending error:", error.response?.data || error.message);
+      throw new Error(`Failed to send rejection email: ${error.message}`);
+    }
+  }
+
+  // ✉️ Send pending/under review email
+  static async sendPendingEmail(internEmail, internName, feedbackId) {
+    try {
+      const subject = `⏳ Your Certificate Request is Under Review`;
+      
+      const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+    .header { background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+    .content { padding: 20px; }
+    .footer { text-align: center; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>⏳ Certificate Request Under Review</h2>
+      <p>Your request is being processed</p>
+    </div>
+    <div class="content">
+      <p>Dear <strong>${internName}</strong>,</p>
+      <p>Thank you for submitting your internship certificate request to <strong>Graphura India Pvt. Ltd.</strong></p>
+      
+      <p>This is to inform you that your request is currently <strong>under review</strong> by our team.</p>
+      
+      <p><strong>Request Details:</strong></p>
+      <ul>
+        <li>Request ID: ${feedbackId}</li>
+        <li>Status: Under Review</li>
+        <li>Review Timeline: 3-5 business days</li>
+      </ul>
+      
+      <p>You will receive another email once the review process is complete with the final status of your request.</p>
+      
+      <p>We appreciate your patience during this process.</p>
+    </div>
+    <div class="footer">
+      <p>Best regards,<br>Team Graphura</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+      const emailData = {
+        sender: { name: "Graphura", email: process.env.FROM_EMAIL },
+        to: [{ email: internEmail }],
+        subject,
+        htmlContent,
+      };
+
+      const response = await axios.post("https://api.brevo.com/v3/smtp/email", emailData, {
+        headers: {
+          "api-key": process.env.BREVO_API_KEY,
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("✅ Pending email sent successfully");
+      return response.data;
+    } catch (error) {
+      console.error("❌ Pending email sending error:", error.response?.data || error.message);
+      throw new Error(`Failed to send pending email: ${error.message}`);
+    }
+  }
 }
 
 export const updateCertificateStatus = async (req, res) => {
   try {
     const { feedbackId } = req.params;
-    const { certificateStatus } = req.body;
+    const { certificateStatus, rejectionReason } = req.body;
 
     // First, get the current feedback to find the intern's uniqueId
     const currentFeedback = await Feedback.findById(feedbackId);
@@ -627,69 +779,113 @@ export const updateCertificateStatus = async (req, res) => {
 
     const previousStatus = currentFeedback.certificateStatus;
     const uniqueId = currentFeedback.uniqueId;
+    const internEmail = currentFeedback.internDetails?.email;
+    const internName = currentFeedback.internDetails?.fullName;
 
     // Update the feedback status
     const updatedFeedback = await Feedback.findByIdAndUpdate(
       feedbackId,
-      { certificateStatus },
+      { certificateStatus, ...(rejectionReason && { rejectionReason }) },
       { new: true, runValidators: true }
     );
 
-    // 🔥 AUTO-GENERATE CERTIFICATE when status changes to "issued"
-    if (certificateStatus === 'issued' && previousStatus !== 'issued') {
+    // 📧 Send email based on status change
+    if (certificateStatus !== previousStatus) {
       try {
-        // Generate certificate number FIRST
-        const certificateNumber = await CertificateGenerator.generateCertificateNumber();
-        
-        // Get intern data from feedback
-        const internData = {
-          fullName: updatedFeedback.internDetails?.fullName,
-          email: updatedFeedback.internDetails?.email,
-          startMonth: updatedFeedback.internshipInfo?.startMonth,
-          endMonth: updatedFeedback.internshipInfo?.endMonth,
-          domain: updatedFeedback.internshipInfo?.domain,
-          duration: updatedFeedback.internshipInfo?.duration,
-          uniqueId: updatedFeedback.uniqueId,
-          certificateNumber: certificateNumber
-        };
+        if (certificateStatus === 'issued' && previousStatus !== 'issued') {
+          // 🔥 AUTO-GENERATE CERTIFICATE when status changes to "issued"
+          const certificateNumber = await CertificateGenerator.generateCertificateNumber();
+          
+          // Get intern data from feedback
+          const internData = {
+            fullName: updatedFeedback.internDetails?.fullName,
+            email: updatedFeedback.internDetails?.email,
+            startMonth: updatedFeedback.internshipInfo?.startMonth,
+            endMonth: updatedFeedback.internshipInfo?.endMonth,
+            domain: updatedFeedback.internshipInfo?.domain,
+            duration: updatedFeedback.internshipInfo?.duration,
+            uniqueId: updatedFeedback.uniqueId,
+            certificateNumber: certificateNumber
+          };
 
-        // Generate certificate PDF
-        const certificateBuffer = await CertificateGenerator.generateCertificate(internData);
-        
-        // Send certificate via email
-        await CertificateGenerator.sendCertificateEmail(
-          internData.email,
-          internData.fullName,
-          certificateBuffer,
-          internData
-        );
+          // Generate certificate PDF
+          const certificateBuffer = await CertificateGenerator.generateCertificate(internData);
+          
+          // Send certificate via email
+          await CertificateGenerator.sendCertificateEmail(
+            internData.email,
+            internData.fullName,
+            certificateBuffer,
+            internData
+          );
 
-        // ✅ Update the feedback with certificate number
-        await Feedback.findByIdAndUpdate(
-          feedbackId,
-          { 
-            'internshipInfo.certificateNumber': certificateNumber,
-            certificateIssuedAt: new Date()
-          },
-          { new: true }
-        );
-
-        // ✅ ALSO update the Intern model with certificate info
-        if (uniqueId) {
-          await Intern.findOneAndUpdate(
-            { uniqueId: uniqueId },
-            {
-              certificateNumber: certificateNumber,
-              certificateIssuedAt: new Date(),
-              certificateStatus: 'issued'
+          // ✅ Update the feedback with certificate number
+          await Feedback.findByIdAndUpdate(
+            feedbackId,
+            { 
+              'internshipInfo.certificateNumber': certificateNumber,
+              certificateIssuedAt: new Date()
             },
             { new: true }
           );
-        }
 
-      } catch (certError) {
-        console.error('❌ Certificate generation failed:', certError);
-        // Don't fail the entire request if certificate generation fails
+          // ✅ ALSO update the Intern model with certificate info
+          if (uniqueId) {
+            await Intern.findOneAndUpdate(
+              { uniqueId: uniqueId },
+              {
+                certificateNumber: certificateNumber,
+                certificateIssuedAt: new Date(),
+                certificateStatus: 'issued'
+              },
+              { new: true }
+            );
+          }
+        } 
+        else if (certificateStatus === 'rejected') {
+          // 📧 Send rejection email
+          await CertificateGenerator.sendRejectionEmail(
+            internEmail,
+            internName,
+            feedbackId,
+            rejectionReason
+          );
+
+          // Update Intern model status
+          if (uniqueId) {
+            await Intern.findOneAndUpdate(
+              { uniqueId: uniqueId },
+              {
+                certificateStatus: 'rejected',
+                rejectionReason: rejectionReason,
+                rejectedAt: new Date()
+              },
+              { new: true }
+            );
+          }
+        }
+        else if (certificateStatus === 'pending') {
+          // 📧 Send pending/under review email
+          await CertificateGenerator.sendPendingEmail(
+            internEmail,
+            internName,
+            feedbackId
+          );
+
+          // Update Intern model status
+          if (uniqueId) {
+            await Intern.findOneAndUpdate(
+              { uniqueId: uniqueId },
+              {
+                certificateStatus: 'pending'
+              },
+              { new: true }
+            );
+          }
+        }
+      } catch (emailError) {
+        console.error('❌ Email sending failed:', emailError);
+        // Don't fail the entire request if email sending fails
       }
     }
 
@@ -704,7 +900,8 @@ export const updateCertificateStatus = async (req, res) => {
         certificateNumber: finalFeedback.internshipInfo?.certificateNumber,
         internDetails: finalFeedback.internDetails,
         internshipInfo: finalFeedback.internshipInfo,
-        uniqueId: finalFeedback.uniqueId
+        uniqueId: finalFeedback.uniqueId,
+        rejectionReason: finalFeedback.rejectionReason
       }
     });
     

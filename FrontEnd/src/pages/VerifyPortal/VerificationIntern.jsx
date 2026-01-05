@@ -352,10 +352,6 @@ const InternVerificationPortal = () => {
                   <div class="info-value">${internData.mobile || 'N/A'}</div>
                 </div>
                 <div class="info-item">
-                  <div class="info-label">Date of Birth</div>
-                  <div class="info-value">${formatDateToNumeric(internData.dob)}</div>
-                </div>
-                <div class="info-item">
                   <div class="info-label">Joining Date</div>
                   <div class="info-value">${formatDateToNumeric(internData.joiningDate)}</div>
                 </div>
@@ -810,10 +806,6 @@ const InternVerificationPortal = () => {
                 <div className="bg-blue-50 p-3 md:p-4 rounded-lg md:rounded-xl border border-blue-200">
                   <label className="text-xs md:text-sm font-medium text-blue-700">Mobile</label>
                   <p className="text-base md:text-lg font-semibold text-gray-900 mt-1">{internData.mobile}</p>
-                </div>
-                <div className="bg-blue-50 p-3 md:p-4 rounded-lg md:rounded-xl border border-blue-200">
-                  <label className="text-xs md:text-sm font-medium text-blue-700">Date of Birth</label>
-                  <p className="text-base md:text-lg font-semibold text-gray-900 mt-1">{formatDateToNumeric(internData.dob)}</p>
                 </div>
                 <div className="bg-blue-50 p-3 md:p-4 rounded-lg md:rounded-xl border border-blue-200">
                   <label className="text-xs md:text-sm font-medium text-blue-700">Joining Date</label>
