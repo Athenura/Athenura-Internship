@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Eye, EyeOff, Mail, ArrowLeft, RefreshCw } from "lucide-react";
-import Graphura from "../../public/loginPNG.webp";
+import Athenura from "../../public/loginPNG.webp";
 
 const InternInchargeLogin = () => {
     const navigate = useNavigate();
@@ -262,7 +262,7 @@ const InternInchargeLogin = () => {
     return (
         <div className="min-h-screen flex sm:flex-row flex-col items-center justify-around bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 py-8">
             <img
-                src={Graphura}
+                src={Athenura}
                 alt="Login Illustration"
                 className="w-1/3 h-full object-cover rounded-3xl shadow-lg"
             />

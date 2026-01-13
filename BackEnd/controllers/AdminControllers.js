@@ -202,7 +202,7 @@ const generateUniqueId = async () => {
   let exists = true;
 
   while (exists) {
-    candidateId = `GRAPHURA/${currentDate.getFullYear().toString().slice(2)}/${(
+    candidateId = `ATHENURA/${currentDate.getFullYear().toString().slice(2)}/${(
       currentDate.getMonth() + 1
     )
       .toString()
@@ -212,7 +212,6 @@ const generateUniqueId = async () => {
     const existing = await Intern.findOne({ uniqueId: candidateId });
     if (!existing) exists = false;
   }
-
   return candidateId;
 };
 
@@ -254,7 +253,7 @@ export const generateOfferLetterWithPNG = async (req, res) => {
       process.cwd(),
       "public",
       "templates",
-      "GRAPHURAOFFERLETTERS.png"
+      "ATHENURAOFFERLATTER.png"
     );
 
     if (!fs.existsSync(backgroundPath)) {
@@ -281,35 +280,18 @@ export const generateOfferLetterWithPNG = async (req, res) => {
     pdfDoc.registerFontkit(fontkit);
 
     const jostRegularPath = path.join(process.cwd(), "public", "fonts", "Jost-Regular.ttf");
-    const jostBoldPath = path.join(process.cwd(), "public", "fonts", "Jost-Bold.ttf");
+    const jostBoldPath = path.join(process.cwd(), "public", "fonts", "ReadexPro-bold.ttf");
 
     const font = await pdfDoc.embedFont(fs.readFileSync(jostRegularPath));
     const fontBold = await pdfDoc.embedFont(fs.readFileSync(jostBoldPath));
 
-    let y = 635;
-    page.drawText("GRAPHURA INDIA PRIVATE LIMITED", {
-      x: 60,
-      y,
-      size: 15,
-      font: fontBold,
-      color: rgb(0, 0, 0),
-    });
-    y -= 20;
-    page.drawText("Gurgaon, Haryana.", {
-      x: 60,
-      y,
-      size: 14,
-      font,
-      color: rgb(0, 0, 0),
-    });
-
-    y -= 60;
+    let y = 590;
     page.drawText(`To,`, { x: 60, y, size: 13, font, color: rgb(0, 0, 0) });
     y -= 20;
     page.drawText(`${intern.fullName}`, {
       x: 60,
       y,
-      size: 14,
+      size: 13,
       font: fontBold,
       color: rgb(0, 0, 0),
     });
@@ -317,14 +299,14 @@ export const generateOfferLetterWithPNG = async (req, res) => {
     page.drawText(`${intern.domain} Department`, {
       x: 60,
       y,
-      size: 14,
+      size: 13,
       font,
       color: rgb(0, 0, 0),
     });
 
     y -= 40;
     page.drawText(
-      "Subject: Offer of Internship at Graphura India Private Limited",
+      "Subject : Offer Letter for Internship – Athenura",
       { x: 60, y, size: 13, font, color: rgb(0, 0, 0) }
     );
 
@@ -332,41 +314,46 @@ export const generateOfferLetterWithPNG = async (req, res) => {
     page.drawText(`Dear ${intern.fullName},`, {
       x: 60,
       y,
-      size: 14,
+      size: 13,
       font,
       color: rgb(0, 0, 0),
     });
 
     y -= 20;
+
     const textLines = [
-      `We are delighted to offer you the position of Intern at Graphura India Private`,
-      `Limited, starting from ${formattedJoiningDate}. We were impressed with your skills and`,
-      "believe that your contribution will add value to our team.",
+      "We are pleased to offer you the role of Intern at Athenura. Your skills and",
+      "enthusiasm stood out to us, and we believe you will contribute meaningfully",
+      "to our growth and vision.",
       "",
-      "We look forward to welcoming you aboard and are excited about the journey",
-      "ahead. Please feel free to reach out if you have any questions before your start",
-      "date. Together, let's create impactful work and grow as a team. Once again,",
-      "congratulations and welcome to Graphura India Private Limited.",
+      `You will begin your association with Athenura on ${formattedJoiningDate},`,
+      "working in a Remote position. This role offers hands-on experience,",
+      "professional exposure, and opportunities to strengthen your technical and",
+      "collaborative skills.",
+      "",
+      "At Athenura, we focus on innovation, continuous learning, and real-world",
+      "problem-solving. We look forward to your ideas and contributions as we work",
+      "together toward excellence."
     ];
 
     textLines.forEach((line) => {
-      page.drawText(line, { x: 60, y, size: 14, font, color: rgb(0, 0, 0) });
+      page.drawText(line, { x: 60, y, size: 15, font, color: rgb(0, 0, 0) });
       y -= 15;
     });
 
     y -= 25;
-    page.drawText("Thank you", { x: 60, y, size: 14, font: fontBold });
+    page.drawText("Thank you", { x: 60, y, size: 13, font: fontBold });
     y -= 15;
-    page.drawText("Team Graphura.", { x: 60, y, size: 14, font: fontBold });
+    page.drawText("Team Athenura.", { x: 60, y, size: 13, font: fontBold });
 
-    y -= 95;
-    page.drawText("Unique ID:", { x: 75, y, size: 14, font: fontBold });
+    y -= 75;
+    page.drawText("Unique ID:", { x: 75, y, size: 13, font: fontBold });
     y -= 15;
-    page.drawText(intern.uniqueId, { x: 75, y, size: 14, font: fontBold });
+    page.drawText(intern.uniqueId, { x: 75, y, size: 13, font: fontBold });
 
     y -= 15;
-    page.drawText("Date:", { x: 75, y, size: 14, font: fontBold });
-    page.drawText(formattedJoiningDate, { x: 115, y, size: 14, font });
+    page.drawText("Date:", { x: 75, y, size: 13, font: fontBold });
+    page.drawText(formattedJoiningDate, { x: 115, y, size: 13, font });
 
     // 5️⃣ Generate PDF bytes
     const pdfBytes = await pdfDoc.save();
@@ -376,21 +363,25 @@ export const generateOfferLetterWithPNG = async (req, res) => {
     // Email content
     const emailText = `Dear ${intern.fullName},
 
-Congratulations and a warm welcome to Graphura India Private Limited.
+Congratulations and welcome to Athenura!
 
-We’re delighted to have you onboard as an intern. Your internship is scheduled to commence on ${formattedJoiningDate}. During this period, you will gain valuable industry exposure, enhance your professional skills, and contribute meaningfully to assigned projects. Upon successful completion, you will be awarded a Certificate of Internship from Graphura India Private Limited.
+We are pleased to inform you that you have been selected to join us as an intern. Your internship is scheduled to begin on ${formattedJoiningDate}. During this period, you will have the opportunity to gain hands-on industry experience, develop your professional and technical skills, and actively contribute to real-world projects.
 
-We kindly request you to review the attached document carefully.
+At Athenura, we believe in continuous learning, innovation, and practical exposure. Upon successful completion of your internship, you will be awarded an Internship Completion Certificate from Athenura.
 
-If you have any queries, feel free to reach out to the HR Department.
+We request you to carefully review the attached document for further details regarding your internship.
 
-Best regards,
-HR Department
-Graphura India Private Limited
-📧 Official@graphura.in
-🌐 www.graphura.online
-🔗 LinkedIn: <a href="https://www.linkedin.com/company/graphura-india-private-limited/">Graphura India Private Limited</a>
+Should you have any questions or require clarification, please feel free to contact the HR team.
+
+We look forward to having you onboard and wish you a rewarding learning experience with us.
+
+Warm regards,  
+HR Department  
+Athenura  
+📧 official@athenura.in   
+🔗 LinkedIn: https://www.linkedin.com/company/athenura
 `;
+
 
 
 
@@ -399,9 +390,9 @@ Graphura India Private Limited
       await axios.post(
         "https://api.brevo.com/v3/smtp/email",
         {
-          sender: { name: "Graphura", email: process.env.FROM_EMAIL },
+          sender: { name: "Athenura", email: process.env.FROM_EMAIL },
           to: [{ email: intern.email }],
-          subject: "Internship Offer Letter – Graphura India Private Limited",
+          subject: "Internship Offer Letter – Athenura",
           htmlContent: `<pre style="font-family:inherit;">${emailText}</pre>`,
           attachment: [
             {
@@ -515,7 +506,7 @@ export const generateBulkOfferLetters = async (req, res) => {
           process.cwd(),
           "public",
           "templates",
-          "GRAPHURAOFFERLETTERS.png"
+          "ATHENURAOFFERLATTER.png"
         );
 
         if (!fs.existsSync(backgroundPath)) {
@@ -548,7 +539,7 @@ export const generateBulkOfferLetters = async (req, res) => {
         pdfDoc.registerFontkit(fontkit);
 
         const jostRegularPath = path.join(process.cwd(), "public", "fonts", "Jost-Regular.ttf");
-        const jostBoldPath = path.join(process.cwd(), "public", "fonts", "Jost-Bold.ttf");
+        const jostBoldPath = path.join(process.cwd(), "public", "fonts", "ReadexPro-bold.ttf");
 
         // Check if fonts exist
         if (!fs.existsSync(jostRegularPath) || !fs.existsSync(jostBoldPath)) {
@@ -565,24 +556,7 @@ export const generateBulkOfferLetters = async (req, res) => {
         const fontBold = await pdfDoc.embedFont(fs.readFileSync(jostBoldPath));
 
         // Draw text content
-        let y = 635;
-        page.drawText("GRAPHURA INDIA PRIVATE LIMITED", {
-          x: 60,
-          y,
-          size: 15,
-          font: fontBold,
-          color: rgb(0, 0, 0),
-        });
-        y -= 20;
-        page.drawText("Gurgaon, Haryana.", {
-          x: 60,
-          y,
-          size: 14,
-          font,
-          color: rgb(0, 0, 0),
-        });
-
-        y -= 60;
+        let y = 590;
         page.drawText(`To,`, { x: 60, y, size: 13, font, color: rgb(0, 0, 0) });
         y -= 20;
         page.drawText(`${intern.fullName}`, {
@@ -603,7 +577,7 @@ export const generateBulkOfferLetters = async (req, res) => {
 
         y -= 40;
         page.drawText(
-          "Subject: Offer of Internship at Graphura India Private Limited",
+          "Subject : Offer Letter for Internship – Athenura",
           { x: 60, y, size: 13, font, color: rgb(0, 0, 0) }
         );
 
@@ -618,14 +592,18 @@ export const generateBulkOfferLetters = async (req, res) => {
 
         y -= 20;
         const textLines = [
-          `We are delighted to offer you the position of Intern at Graphura India Private`,
-          `Limited, starting from ${formattedJoiningDate}. We were impressed with your skills and`,
-          "believe that your contribution will add value to our team.",
+          "We are pleased to offer you the role of Intern at Athenura. Your skills and",
+          "enthusiasm stood out to us, and we believe you will contribute meaningfully",
+          "to our growth and vision.",
           "",
-          "We look forward to welcoming you aboard and are excited about the journey",
-          "ahead. Please feel free to reach out if you have any questions before your start",
-          "date. Together, let's create impactful work and grow as a team. Once again,",
-          "congratulations and welcome to Graphura India Private Limited.",
+          `You will begin your association with Athenura on ${formattedJoiningDate},`,
+          "working in a Remote position. This role offers hands-on experience,",
+          "professional exposure, and opportunities to strengthen your technical and",
+          "collaborative skills.",
+          "",
+          "At Athenura, we focus on innovation, continuous learning, and real-world",
+          "problem-solving. We look forward to your ideas and contributions as we work",
+          "together toward excellence."
         ];
 
         textLines.forEach((line) => {
@@ -636,9 +614,9 @@ export const generateBulkOfferLetters = async (req, res) => {
         y -= 25;
         page.drawText("Thank you", { x: 60, y, size: 14, font: fontBold });
         y -= 15;
-        page.drawText("Team Graphura.", { x: 60, y, size: 14, font: fontBold });
+        page.drawText("Team Athenura.", { x: 60, y, size: 14, font: fontBold });
 
-        y -= 95;
+        y -= 75;
         page.drawText("Unique ID:", { x: 75, y, size: 14, font: fontBold });
         y -= 15;
         page.drawText(intern.uniqueId, { x: 75, y, size: 14, font: fontBold });
@@ -657,29 +635,32 @@ export const generateBulkOfferLetters = async (req, res) => {
 
           const emailText = `Dear ${intern.fullName},
 
-Congratulations and a warm welcome to Graphura India Private Limited.
+Congratulations and welcome to Athenura!
 
-We’re delighted to have you onboard as an intern. Your internship is scheduled to commence on ${formattedJoiningDate}. During this period, you will gain valuable industry exposure, enhance your professional skills, and contribute meaningfully to assigned projects. Upon successful completion, you will be awarded a Certificate of Internship from Graphura India Private Limited.
+We are pleased to inform you that you have been selected to join us as an intern. Your internship is scheduled to begin on ${formattedJoiningDate}. During this period, you will have the opportunity to gain hands-on industry experience, develop your professional and technical skills, and actively contribute to real-world projects.
 
-We kindly request you to review the attached document carefully.
+At Athenura, we believe in continuous learning, innovation, and practical exposure. Upon successful completion of your internship, you will be awarded an Internship Completion Certificate from Athenura.
 
-If you have any queries, feel free to reach out to the HR Department.
+We request you to carefully review the attached document for further details regarding your internship.
 
-Best regards,
-HR Department
-Graphura India Private Limited
-📧 Official@graphura.in
-🌐 www.graphura.online
-🔗 LinkedIn: <a href="https://www.linkedin.com/company/graphura-india-private-limited/">Graphura India Private Limited</a>
+Should you have any questions or require clarification, please feel free to contact the HR team.
+
+We look forward to having you onboard and wish you a rewarding learning experience with us.
+
+Warm regards,  
+HR Department  
+Athenura  
+📧 official@athenura.in   
+🔗 LinkedIn: https://www.linkedin.com/company/athenura
 `;
 
           try {
             await axios.post(
               "https://api.brevo.com/v3/smtp/email",
               {
-                sender: { name: "Graphura", email: process.env.FROM_EMAIL },
+                sender: { name: "Athenura", email: process.env.FROM_EMAIL },
                 to: [{ email: intern.email }],
-                subject: "Internship Offer Letter – Graphura India Private Limited",
+                subject: "Internship Offer Letter –  Athenura",
                 htmlContent: `<pre style="font-family:inherit;">${emailText}</pre>`,
                 attachment: [
                   {
@@ -1380,7 +1361,7 @@ export const approveLeave = async (req, res) => {
     });
 
     // Send approval email (use the same email function from before)
-    const subject = `Leave Request Approved - Graphura Internship Program`;
+    const subject = `Leave Request Approved - Athenura Internship Program`;
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -1399,7 +1380,7 @@ export const approveLeave = async (req, res) => {
         <div class="container">
           <div class="header">
             <h1>Leave Request Approved</h1>
-            <p>Graphura Internship Program</p>
+            <p>Athenura Internship Program</p>
           </div>
           <div class="content">
             <div class="status-approved">
@@ -1418,8 +1399,8 @@ export const approveLeave = async (req, res) => {
             <p>Your leave has been approved by the Admin. Please ensure a smooth handover of your work before proceeding on leave.</p>
           </div>
           <div class="footer">
-            <p>This is an automated notification from Graphura Internship Program.</p>
-            <p>© ${new Date().getFullYear()} Graphura India Private Limited. All rights reserved.</p>
+            <p>This is an automated notification from Athenura Internship Program.</p>
+            <p>© ${new Date().getFullYear()} Athenura . All rights reserved.</p>
           </div>
         </div>
       </body>
@@ -1461,7 +1442,7 @@ export const rejectLeave = async (req, res) => {
     await leave.save();
 
     // Send rejection email
-    const subject = `Leave Request Update - Graphura Internship Program`;
+    const subject = `Leave Request Update - Athenura Internship Program`;
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -1480,7 +1461,7 @@ export const rejectLeave = async (req, res) => {
         <div class="container">
           <div class="header">
             <h1>Leave Request Update</h1>
-            <p>Graphura Internship Program</p>
+            <p>Athenura Internship Program</p>
           </div>
           <div class="content">
             <div class="status-rejected">
@@ -1499,8 +1480,8 @@ export const rejectLeave = async (req, res) => {
             <p>Your leave request has been rejected by the Admin. Please contact the admin office for more details or clarification.</p>
           </div>
           <div class="footer">
-            <p>This is an automated notification from Graphura Internship Program.</p>
-            <p>© ${new Date().getFullYear()} Graphura India Private Limited. All rights reserved.</p>
+            <p>This is an automated notification from Athenura Internship Program.</p>
+            <p>© ${new Date().getFullYear()} Athenura . All rights reserved.</p>
           </div>
         </div>
       </body>

@@ -64,20 +64,20 @@ const FeedbackForm = () => {
     "Shape The Future"
   ];
 
-  // Colorful background text phrases with different colors
+  // Blue-themed background text phrases
   const backgroundTexts = [
-    { text: "GRAPHURA", color: "text-blue-200" },
-    { text: "FEEDBACK", color: "text-purple-200" },
-    { text: "SUCCESS", color: "text-green-200" },
-    { text: "GROWTH", color: "text-yellow-200" },
-    { text: "LEARNING", color: "text-pink-200" },
-    { text: "IMPACT", color: "text-indigo-200" },
-    { text: "INNOVATION", color: "text-red-200" },
-    { text: "EXCELLENCE", color: "text-teal-200" },
-    { text: "ACHIEVE", color: "text-orange-200" },
-    { text: "INSPIRE", color: "text-cyan-200" },
-    { text: "CREATE", color: "text-lime-200" },
-    { text: "DREAM", color: "text-rose-200" }
+    { text: "ATHENURA", color: "text-blue-100" },
+    { text: "FEEDBACK", color: "text-blue-100" },
+    { text: "SUCCESS", color: "text-blue-100" },
+    { text: "GROWTH", color: "text-blue-100" },
+    { text: "LEARNING", color: "text-blue-100" },
+    { text: "IMPACT", color: "text-blue-100" },
+    { text: "INNOVATION", color: "text-blue-100" },
+    { text: "EXCELLENCE", color: "text-blue-100" },
+    { text: "ACHIEVE", color: "text-blue-100" },
+    { text: "INSPIRE", color: "text-blue-100" },
+    { text: "CREATE", color: "text-blue-100" },
+    { text: "DREAM", color: "text-blue-100" }
   ];
 
   // Steps with Lucide icons
@@ -190,9 +190,7 @@ const FeedbackForm = () => {
     }
   };
 
-
-  // Handle file uploads without compression
-  // Handle file uploads without compression
+  // Handle file uploads
   const handleFileChange = (e) => {
     const { name, files } = e.target;
     const file = files[0];
@@ -303,7 +301,7 @@ const FeedbackForm = () => {
         }
       });
 
-      console.log('Submitting compressed form data...');
+      console.log('Submitting form data...');
 
       const response = await axios.post('/api/feedback', submitData, {
         headers: {
@@ -361,13 +359,13 @@ const FeedbackForm = () => {
     }));
   };
 
-  // Colorful Background Text Component
+  // Blue Background Text Component
   const BackgroundText = () => (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {backgroundTexts.map((item, index) => (
         <motion.div
           key={index}
-          className={`absolute font-bold text-4xl lg:text-8xl whitespace-nowrap ${item.color} opacity-15 lg:opacity-20`}
+          className={`absolute font-bold text-4xl lg:text-8xl whitespace-nowrap ${item.color} opacity-10 lg:opacity-15`}
           initial={{
             x: Math.random() * 100 - 50 + '%',
             y: Math.random() * 100 - 50 + '%',
@@ -411,7 +409,7 @@ const FeedbackForm = () => {
         <motion.h2
           initial={{ scale: 0.9 }}
           animate={{ scale: 1 }}
-          className="text-xl lg:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+          className="text-xl lg:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent"
         >
           Intern Information
         </motion.h2>
@@ -462,7 +460,7 @@ const FeedbackForm = () => {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center space-x-2 mt-2 text-red-600 bg-red-50 p-2 lg:p-3 rounded-lg backdrop-blur-sm text-sm"
+              className="flex items-center space-x-2 mt-2 text-blue-600 bg-blue-50 p-2 lg:p-3 rounded-lg backdrop-blur-sm text-sm"
             >
               <AlertCircle size={16} />
               <span>{searchError}</span>
@@ -473,27 +471,27 @@ const FeedbackForm = () => {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-2 lg:mt-3 p-3 lg:p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg backdrop-blur-sm"
+              className="mt-2 lg:mt-3 p-3 lg:p-4 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg backdrop-blur-sm"
             >
               <div className="flex items-center justify-between mb-2 lg:mb-3">
-                <div className="flex items-center space-x-2 text-green-700">
+                <div className="flex items-center space-x-2 text-blue-700">
                   <CheckCircle size={18} />
                   <span className="font-semibold text-sm lg:text-base">Intern details loaded successfully!</span>
                 </div>
                 <button
                   onClick={clearSearch}
-                  className="text-green-600 hover:text-green-800 transition-colors"
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
                   title="Clear and search again"
                 >
                   <X size={16} />
                 </button>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs lg:text-sm text-green-700">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs lg:text-sm text-blue-700">
                 <div><span className="font-medium">Name:</span> {internData.fullName}</div>
                 <div><span className="font-medium">Domain:</span> {internData.domain}</div>
                 <div><span className="font-medium">Duration:</span> {internData.duration} months</div>
                 <div><span className="font-medium">Status:</span>
-                  <span className="ml-1 px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                  <span className="ml-1 px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
                     {internData.status}
                   </span>
                 </div>
@@ -509,7 +507,7 @@ const FeedbackForm = () => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="bg-gradient-to-r from-blue-50 to-cyan-50 p-3 lg:p-4 rounded-lg border border-blue-200 backdrop-blur-sm"
+          className="bg-gradient-to-r from-blue-50 to-blue-100 p-3 lg:p-4 rounded-lg border border-blue-200 backdrop-blur-sm"
         >
           <h3 className="text-base lg:text-lg font-semibold text-blue-800 mb-2 lg:mb-3 flex items-center space-x-2">
             <User size={18} />
@@ -551,9 +549,9 @@ const FeedbackForm = () => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="bg-gradient-to-r from-purple-50 to-pink-50 p-3 lg:p-4 rounded-lg border border-purple-200 backdrop-blur-sm"
+          className="bg-gradient-to-r from-blue-50 to-blue-100 p-3 lg:p-4 rounded-lg border border-blue-200 backdrop-blur-sm"
         >
-          <h3 className="text-base lg:text-lg font-semibold text-purple-800 mb-2 lg:mb-3 flex items-center space-x-2">
+          <h3 className="text-base lg:text-lg font-semibold text-blue-800 mb-2 lg:mb-3 flex items-center space-x-2">
             <Mail size={18} />
             <span>Contact Information</span>
           </h3>
@@ -628,7 +626,7 @@ const FeedbackForm = () => {
           type="button"
           onClick={nextStep}
           disabled={!formData.uniqueId || !formData.fullName || !formData.email}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 disabled:scale-100 shadow-lg hover:shadow-xl disabled:shadow-md flex items-center space-x-2 disabled:cursor-not-allowed backdrop-blur-sm text-sm lg:text-base w-full xs:w-auto justify-center"
+          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 disabled:scale-100 shadow-lg hover:shadow-xl disabled:shadow-md flex items-center space-x-2 disabled:cursor-not-allowed backdrop-blur-sm text-sm lg:text-base w-full xs:w-auto justify-center"
         >
           <span>Next</span>
           <motion.div
@@ -654,7 +652,7 @@ const FeedbackForm = () => {
         <motion.h2
           initial={{ scale: 0.9 }}
           animate={{ scale: 1 }}
-          className="text-xl lg:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+          className="text-xl lg:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent"
         >
           Internship Details
         </motion.h2>
@@ -665,7 +663,7 @@ const FeedbackForm = () => {
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 lg:p-4 rounded-lg border border-blue-200 backdrop-blur-sm"
+          className="bg-gradient-to-r from-blue-50 to-blue-100 p-3 lg:p-4 rounded-lg border border-blue-200 backdrop-blur-sm"
         >
           <h3 className="text-base lg:text-lg font-semibold text-blue-800 mb-2 lg:mb-3 flex items-center space-x-2">
             <Briefcase size={18} />
@@ -716,20 +714,20 @@ const FeedbackForm = () => {
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 lg:p-4 rounded-lg border border-green-200 backdrop-blur-sm"
+            className="bg-gradient-to-r from-blue-50 to-blue-100 p-3 lg:p-4 rounded-lg border border-blue-200 backdrop-blur-sm"
           >
-            <h3 className="text-base lg:text-lg font-semibold text-green-800 mb-2 lg:mb-3 flex items-center space-x-2">
+            <h3 className="text-base lg:text-lg font-semibold text-blue-800 mb-2 lg:mb-3 flex items-center space-x-2">
               <CheckCircle size={18} />
               <span>Internship Summary</span>
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs lg:text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs lg:text-sm text-blue-700">
               <div><span className="font-medium">Duration:</span> {internData.duration} months</div>
               <div><span className="font-medium">Extended Days:</span> {internData.extendedDays || 0}</div>
               <div><span className="font-medium">Total Duration:</span> {(parseInt(internData.duration) || 0) + (parseInt(internData.extendedDays) || 0)} months</div>
               <div><span className="font-medium">Start Date:</span> {internData.startMonth}</div>
               <div><span className="font-medium">End Date:</span> {internData.endMonth}</div>
               <div><span className="font-medium">Status:</span>
-                <span className="ml-1 px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                <span className="ml-1 px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
                   {internData.status}
                 </span>
               </div>
@@ -747,7 +745,7 @@ const FeedbackForm = () => {
         <button
           type="button"
           onClick={prevStep}
-          className="bg-gray-500 hover:bg-gray-600 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2 backdrop-blur-sm text-sm lg:text-base flex-1 xs:flex-none justify-center"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2 backdrop-blur-sm text-sm lg:text-base flex-1 xs:flex-none justify-center"
         >
           <motion.div
             animate={{ x: [0, -5, 0] }}
@@ -761,7 +759,7 @@ const FeedbackForm = () => {
           type="button"
           onClick={nextStep}
           disabled={!formData.domain || !formData.duration}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 disabled:scale-100 shadow-lg hover:shadow-xl disabled:shadow-md flex items-center space-x-2 disabled:cursor-not-allowed backdrop-blur-sm text-sm lg:text-base flex-1 xs:flex-none justify-center"
+          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 disabled:scale-100 shadow-lg hover:shadow-xl disabled:shadow-md flex items-center space-x-2 disabled:cursor-not-allowed backdrop-blur-sm text-sm lg:text-base flex-1 xs:flex-none justify-center"
         >
           <span>Next</span>
           <motion.div
@@ -787,7 +785,7 @@ const FeedbackForm = () => {
         <motion.h2
           initial={{ scale: 0.9 }}
           animate={{ scale: 1 }}
-          className="text-xl lg:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+          className="text-xl lg:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent"
         >
           Share Feedback
         </motion.h2>
@@ -800,9 +798,7 @@ const FeedbackForm = () => {
         transition={{ delay: 0.2 }}
         className="space-y-3 lg:space-y-4"
       >
-
         <div>
-
           <label htmlFor="feedbackText" className="block text-sm font-medium text-gray-700 mb-1">
             Your Feedback *
           </label>
@@ -818,11 +814,10 @@ const FeedbackForm = () => {
           />
         </div>
         {formData.feedbackText.length > 0 && formData.feedbackText.length < 50 && (
-          <p className="text-red-500 text-sm mt-1">
+          <p className="text-blue-500 text-sm mt-1">
             Feedback must be at least 50 characters.
           </p>
         )}
-
       </motion.div>
 
       <motion.div
@@ -834,7 +829,7 @@ const FeedbackForm = () => {
         <button
           type="button"
           onClick={prevStep}
-          className="bg-gray-500 hover:bg-gray-600 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2 backdrop-blur-sm text-sm lg:text-base flex-1 xs:flex-none justify-center"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2 backdrop-blur-sm text-sm lg:text-base flex-1 xs:flex-none justify-center"
         >
           <motion.div
             animate={{ x: [0, -5, 0] }}
@@ -848,7 +843,7 @@ const FeedbackForm = () => {
           type="button"
           onClick={nextStep}
           disabled={formData.feedbackText.trim().length < 50}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
+          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 
              disabled:from-gray-400 disabled:to-gray-500 text-white px-6 lg:px-8 py-2 lg:py-3 
              rounded-lg font-medium transition-all duration-300 transform hover:scale-105 
              disabled:scale-100 shadow-lg hover:shadow-xl disabled:shadow-md flex items-center 
@@ -863,12 +858,11 @@ const FeedbackForm = () => {
             <ArrowRight size={16} />
           </motion.div>
         </button>
-
       </motion.div>
     </motion.div>
   );
 
-  // Step 4: Upload Media with Compression
+  // Step 4: Upload Media
   const renderStep4 = () => (
     <motion.div
       initial={{ opacity: 0, x: 50 }}
@@ -880,7 +874,7 @@ const FeedbackForm = () => {
         <motion.h2
           initial={{ scale: 0.9 }}
           animate={{ scale: 1 }}
-          className="text-xl lg:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+          className="text-xl lg:text-2xl font-bold text-gray-800 bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent"
         >
           Upload Media
         </motion.h2>
@@ -911,7 +905,7 @@ const FeedbackForm = () => {
                 />
                 <label
                   htmlFor="photo"
-                  className="block border-2 border-dashed border-gray-300 rounded-lg p-4 lg:p-6 text-center transition-all duration-300 cursor-pointer bg-white backdrop-blur-sm hover:border-blue-400 hover:bg-blue-50"
+                  className="block border-2 border-dashed border-blue-300 rounded-lg p-4 lg:p-6 text-center transition-all duration-300 cursor-pointer bg-blue-50 backdrop-blur-sm hover:border-blue-400 hover:bg-blue-100"
                 >
                   <motion.div
                     animate={{ y: [0, -5, 0] }}
@@ -922,7 +916,7 @@ const FeedbackForm = () => {
                   <p className="text-gray-600 font-medium text-sm lg:text-base">
                     {formData.photo ? formData.photo.name : 'Click to upload your photo'}
                   </p>
-                  <p className="text-xs lg:text-sm text-gray-500 mt-1 lg:mt-2">PNG, JPG, JPEG - Max 1MB</p>
+                  <p className="text-xs lg:text-sm text-blue-600 mt-1 lg:mt-2">PNG, JPG, JPEG - Max 1MB</p>
                 </label>
               </div>
 
@@ -933,17 +927,17 @@ const FeedbackForm = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   className="relative group"
                 >
-                  <div className="flex items-center justify-between p-2 bg-green-50 rounded-t-lg">
+                  <div className="flex items-center justify-between p-2 bg-blue-50 rounded-t-lg">
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm text-green-700 font-medium">Photo Preview</span>
-                      <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded">
+                      <span className="text-sm text-blue-700 font-medium">Photo Preview</span>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                         {(formData.photo.size / 1024).toFixed(2)} KB
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => clearFilePreview('photo')}
-                      className="text-red-500 hover:text-red-700 transition-colors"
+                      className="text-blue-500 hover:text-blue-700 transition-colors"
                     >
                       <X size={16} />
                     </button>
@@ -951,7 +945,7 @@ const FeedbackForm = () => {
                   <img
                     src={photoPreview}
                     alt="Photo preview"
-                    className="w-full h-40 lg:h-48 object-cover rounded-b-lg border-2 border-green-200"
+                    className="w-full h-40 lg:h-48 object-cover rounded-b-lg border-2 border-blue-200"
                   />
                 </motion.div>
               )}
@@ -980,18 +974,18 @@ const FeedbackForm = () => {
                 />
                 <label
                   htmlFor="video"
-                  className="block border-2 border-dashed border-gray-300 rounded-lg p-4 lg:p-6 text-center transition-all duration-300 cursor-pointer bg-white backdrop-blur-sm hover:border-blue-400 hover:bg-blue-50"
+                  className="block border-2 border-dashed border-blue-300 rounded-lg p-4 lg:p-6 text-center transition-all duration-300 cursor-pointer bg-blue-50 backdrop-blur-sm hover:border-blue-400 hover:bg-blue-100"
                 >
                   <motion.div
                     animate={{ y: [0, -5, 0] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
-                    <Video className="text-2xl lg:text-3xl text-purple-500 mb-2 lg:mb-3 mx-auto" size={24} />
+                    <Video className="text-2xl lg:text-3xl text-blue-500 mb-2 lg:mb-3 mx-auto" size={24} />
                   </motion.div>
                   <p className="text-gray-600 font-medium text-sm lg:text-base">
                     {formData.video ? formData.video.name : 'Click to upload your video'}
                   </p>
-                  <p className="text-xs lg:text-sm text-gray-500 mt-1 lg:mt-2">MP4, MOV - Max 10MB</p>
+                  <p className="text-xs lg:text-sm text-blue-600 mt-1 lg:mt-2">MP4, MOV - Max 10MB</p>
                 </label>
               </div>
 
@@ -1002,28 +996,28 @@ const FeedbackForm = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   className="relative group"
                 >
-                  <div className="flex items-center justify-between p-2 bg-purple-50 rounded-t-lg">
+                  <div className="flex items-center justify-between p-2 bg-blue-50 rounded-t-lg">
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm text-purple-700 font-medium">Video Preview</span>
-                      <span className="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded">
+                      <span className="text-sm text-blue-700 font-medium">Video Preview</span>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                         {(formData.video.size / 1024 / 1024).toFixed(2)} MB
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => clearFilePreview('video')}
-                      className="text-red-500 hover:text-red-700 transition-colors"
+                      className="text-blue-500 hover:text-blue-700 transition-colors"
                     >
                       <X size={16} />
                     </button>
                   </div>
-                  <div className="relative w-full h-40 lg:h-48 bg-black rounded-b-lg border-2 border-purple-200">
+                  <div className="relative w-full h-40 lg:h-48 bg-blue-900 rounded-b-lg border-2 border-blue-200">
                     <video
                       src={videoPreview}
                       className="w-full h-full object-contain"
                       controls
                     />
-                    <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
+                    <div className="absolute bottom-2 left-2 bg-blue-800 bg-opacity-50 text-white px-2 py-1 rounded text-xs">
                       Click play to preview
                     </div>
                   </div>
@@ -1054,26 +1048,26 @@ const FeedbackForm = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className={`p-3 rounded-lg ${fileInfo.file
-                ? 'bg-green-50 border border-green-200'
-                : 'bg-yellow-50 border border-yellow-200'
+                ? 'bg-blue-50 border border-blue-200'
+                : 'bg-blue-50 border border-blue-200'
                 }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <fileInfo.icon size={18} className={
-                    fileInfo.file ? 'text-green-500' : 'text-yellow-500'
+                    fileInfo.file ? 'text-blue-500' : 'text-blue-400'
                   } />
                   <div>
-                    <span className="text-sm font-medium capitalize block">
+                    <span className="text-sm font-medium capitalize block text-blue-800">
                       {fileInfo.type} {fileInfo.file ? 'uploaded' : 'required'}
                     </span>
-                    <span className="text-xs text-gray-600">
+                    <span className="text-xs text-blue-600">
                       {fileInfo.type === 'photo' ? 'Max size: 1MB' : 'Max size: 10MB'}
                     </span>
                   </div>
                 </div>
                 {fileInfo.file && (
-                  <span className="text-xs font-medium px-2 py-1 rounded bg-white">
+                  <span className="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800">
                     {fileInfo.type === 'photo'
                       ? `${(fileInfo.file.size / 1024).toFixed(2)} KB`
                       : `${(fileInfo.file.size / 1024 / 1024).toFixed(2)} MB`
@@ -1082,7 +1076,7 @@ const FeedbackForm = () => {
                 )}
               </div>
               {fileInfo.file && (
-                <p className="text-xs text-gray-600 mt-2 truncate">
+                <p className="text-xs text-blue-600 mt-2 truncate">
                   {fileInfo.file.name}
                 </p>
               )}
@@ -1095,7 +1089,7 @@ const FeedbackForm = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-3 lg:p-4 backdrop-blur-sm"
+          className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3 lg:p-4 backdrop-blur-sm"
         >
           <div className="flex items-start space-x-3">
             <Lightbulb size={18} className="text-blue-500 mt-1" />
@@ -1117,10 +1111,10 @@ const FeedbackForm = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-3 lg:p-4 backdrop-blur-sm"
+            className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3 lg:p-4 backdrop-blur-sm"
           >
-            <h4 className="font-medium text-green-800 text-sm lg:text-base mb-2">Upload Summary</h4>
-            <div className="grid grid-cols-1 gap-2 text-xs lg:text-sm text-green-700">
+            <h4 className="font-medium text-blue-800 text-sm lg:text-base mb-2">Upload Summary</h4>
+            <div className="grid grid-cols-1 gap-2 text-xs lg:text-sm text-blue-700">
               {formData.photo && (
                 <div className="flex justify-between">
                   <span>Photo Size:</span>
@@ -1133,7 +1127,7 @@ const FeedbackForm = () => {
                   <span className="font-medium">{(formData.video.size / 1024 / 1024).toFixed(2)} MB</span>
                 </div>
               )}
-              <div className="flex justify-between border-t border-green-200 pt-2">
+              <div className="flex justify-between border-t border-blue-200 pt-2">
                 <span>Total Size:</span>
                 <span className="font-medium">
                   {(((formData.photo?.size || 0) + (formData.video?.size || 0)) / 1024 / 1024).toFixed(2)} MB
@@ -1153,7 +1147,7 @@ const FeedbackForm = () => {
         <button
           type="button"
           onClick={prevStep}
-          className="bg-gray-500 hover:bg-gray-600 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2 backdrop-blur-sm text-sm lg:text-base flex-1 xs:flex-none justify-center"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-2 backdrop-blur-sm text-sm lg:text-base flex-1 xs:flex-none justify-center"
         >
           <motion.div
             animate={{ x: [0, -5, 0] }}
@@ -1167,7 +1161,7 @@ const FeedbackForm = () => {
           type="button"
           onClick={handleSubmit}
           disabled={loading || !formData.photo || !formData.video}
-          className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 disabled:scale-100 shadow-lg hover:shadow-xl disabled:shadow-md flex items-center space-x-2 disabled:cursor-not-allowed backdrop-blur-sm text-sm lg:text-base flex-1 xs:flex-none justify-center"
+          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 disabled:scale-100 shadow-lg hover:shadow-xl disabled:shadow-md flex items-center space-x-2 disabled:cursor-not-allowed backdrop-blur-sm text-sm lg:text-base flex-1 xs:flex-none justify-center"
         >
           {loading ? (
             <>
@@ -1202,7 +1196,7 @@ const FeedbackForm = () => {
       className="text-center py-6 lg:py-8 relative z-10"
     >
       <motion.div
-        className="w-16 h-16 lg:w-20 lg:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 lg:mb-6 backdrop-blur-sm"
+        className="w-16 h-16 lg:w-20 lg:h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 lg:mb-6 backdrop-blur-sm"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 0.2, type: "spring" }}
@@ -1212,7 +1206,7 @@ const FeedbackForm = () => {
           animate={{ scale: 1 }}
           transition={{ delay: 0.4, type: "spring" }}
         >
-          <CheckCircle size={32} className="text-green-500" />
+          <CheckCircle size={32} className="text-blue-500" />
         </motion.div>
       </motion.div>
       <motion.h2
@@ -1257,7 +1251,7 @@ const FeedbackForm = () => {
           setPhotoPreview(null);
           setVideoPreview(null);
         }}
-        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg backdrop-blur-sm text-sm lg:text-base w-full xs:w-auto"
+        className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg backdrop-blur-sm text-sm lg:text-base w-full xs:w-auto"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 1 }}
@@ -1268,20 +1262,20 @@ const FeedbackForm = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-4 lg:py-8 px-3 lg:px-4 relative overflow-hidden">
-      {/* Colorful Background Text */}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-50 py-4 lg:py-8 px-3 lg:px-4 relative overflow-hidden">
+      {/* Blue Background Text */}
       <BackgroundText />
 
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="bg-white rounded-2xl lg:rounded-3xl shadow-xl lg:shadow-2xl overflow-hidden relative backdrop-blur-sm bg-white/95">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 text-white p-4 lg:p-8 relative overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white p-4 lg:p-8 relative overflow-hidden">
             {/* Animated background elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
               {[...Array(15)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="absolute w-1 h-1 lg:w-2 lg:h-2 bg-white rounded-full opacity-20"
+                  className="absolute w-1 h-1 lg:w-2 lg:h-2 bg-blue-200 rounded-full opacity-20"
                   initial={{
                     x: Math.random() * 100 + '%',
                     y: Math.random() * 100 + '%',
@@ -1301,16 +1295,16 @@ const FeedbackForm = () => {
             </div>
 
             <div className="relative z-10">
-              <motion.h1
-                className="text-2xl lg:text-4xl font-bold text-center mb-1 lg:mb-2"
+              <motion.img
+                src="/White.png"
+                alt="Athenura Logo"
+                className="w-48 lg:w-64 mx-auto mb-2"
                 initial={{ y: -50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.6 }}
-              >
-                GRAPHURA
-              </motion.h1>
+              />
               <motion.p
-                className="text-blue-100 text-center mb-1 lg:mb-2 text-sm lg:text-lg"
+                className="text-blue-200 text-center mb-1 lg:mb-2 text-sm lg:text-lg"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
@@ -1374,7 +1368,7 @@ const FeedbackForm = () => {
                             <IconComponent size={14} />
                           )}
                         </motion.div>
-                        <span className="text-xs mt-1 lg:mt-2 text-blue-100 font-medium hidden xs:block">
+                        <span className="text-xs mt-1 lg:mt-2 text-blue-200 font-medium hidden xs:block">
                           {step.label}
                         </span>
                       </div>

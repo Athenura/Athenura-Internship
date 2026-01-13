@@ -1,7 +1,7 @@
 // InternshipForm.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Graphura from "../../../public/Graphura.jpg"
+import Athenura from "../../../public/Athenura.jpeg"
 
 const ApplicationForm = () => {
   const [formData, setFormData] = useState({
@@ -139,8 +139,8 @@ const ApplicationForm = () => {
 
   if (!isOpen) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-gray-900 to-blue-900 text-center p-8">
-        <img src={Graphura} alt="Graphura Logo" className="h-24 w-24 mb-6 rounded-full shadow-lg" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#172A55] via-gray-900 to-[#172A55] text-center p-8">
+        <img src={Athenura} alt="Athenura Logo" className="h-24 w-24 mb-6 rounded-full shadow-lg" />
         <h1 className="text-4xl font-bold text-blue-300 mb-4">Applications Closed</h1>
         <p className="text-gray-300 sm:text-lg text-sm sm:max-w-2xl w-full">
           Thank you for your interest! The internship application form is currently closed.
@@ -150,8 +150,8 @@ const ApplicationForm = () => {
 
         <p className="text-gray-400 mt-2 text-sm">
           Please check back later or contact us at{" "}
-          <a href="mailto:hr@graphura.in" className="text-blue-400 underline">
-            hr@graphura.in
+          <a href="mailto:hr@athenura.in" className="text-blue-400 underline">
+            hr@athenura.in
           </a>
         </p>
       </div>
@@ -159,16 +159,16 @@ const ApplicationForm = () => {
   }
   else {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-gray-900 to-blue-900 sm:p-6 p-2">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#172A55] via-[#1a4562] to-[#172A55] sm:p-6 p-2">
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-5xl bg-white/10 backdrop-blur-sm rounded-2xl shadow-2xl sm:p-8 p-3 space-y-8 border-t-8 border-blue-800"
+          className="w-full max-w-5xl bg-white/10 backdrop-blur-sm rounded-2xl shadow-2xl sm:p-8 p-3 space-y-8 border-t-8 border-[#2B9DB3]"
         >
           {/* Logo */}
           <div className="flex justify-center mb-6">
             <img
-              src={Graphura}
-              alt="Graphura Logo"
+              src={Athenura}
+              alt="Athenura Logo"
               className="h-18 w-auto rounded-full shadow-lg"
 
             />
@@ -177,10 +177,10 @@ const ApplicationForm = () => {
           {/* Title and Subtitle */}
           <div className="text-center space-y-2">
             <h1 className="sm:text-4xl text-2xl font-bold bg-gradient-to-r from-blue-300 via-cyan-400 to-blue-500 bg-clip-text text-transparent">
-              Application Form - Graphura
+              Application Form - Athenura
             </h1>
             <p className="text-gray-300 sm:text-sm text-xs leading-relaxed">
-              Join our team - Fill out all required fields to submit your application. For more details: <a href="mailto:hr@graphura.in" className="underline text-blue-200 hover:text-blue-300 transition-colors">hr@graphura.in</a>, +91 7378021327
+              Join our team - Fill out all required fields to submit your application. For more details: <a href="mailto:hr@athenura.in" className="underline text-blue-200 hover:text-blue-300 transition-colors">hr@athenura.in</a>, +91 9835051934
             </p>
           </div>
 
@@ -641,7 +641,7 @@ const ApplicationForm = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+            className="w-full bg-gradient-to-r from-[#2AA5BC] to-[#2B9DB3] hover:opacity-90 text-white font-semibold py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
           >
             {loading ? (
               <>

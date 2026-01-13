@@ -1,43 +1,60 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Graphura from "/GraphuraLogo.jpg";
+import { Menu, X, ChevronRight, ExternalLink, Users, Briefcase, Award, Globe, Code, Target } from "lucide-react";
+import Athenura from "/AthenuraLogo.jpg";
 
 const HomePage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("hero");
 
   useEffect(() => {
     setIsVisible(true);
-
+    
     const handleMouseMove = (e) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
 
+    const handleScroll = () => {
+      const sections = ['hero', 'features', 'benefits', 'stats'];
+      const current = sections.find(section => {
+        const el = document.getElementById(section);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          return rect.top <= 100 && rect.bottom >= 100;
+        }
+        return false;
+      });
+      if (current) setActiveSection(current);
+    };
+
     window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
-  const FeatureCard = ({ icon, title, description, tags, gradient, delay }) => (
+  const FeatureCard = ({ icon: Icon, title, description, tags, gradient,  }) => (
     <div
-      className={`bg-white/60 backdrop-blur-lg p-4 sm:p-6 rounded-2xl border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 group cursor-pointer ${isVisible ? 'animate-fade-in-up' : 'opacity-0'
+      className={`bg-white/80 backdrop-blur-xl p-6 rounded-3xl border border-white/50 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 group cursor-pointer ${isVisible ? 'animate-fade-in-up' : 'opacity-0'
         }`}
-      style={{
-        animationDelay: `${delay}ms`,
-        background: `linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 100%)`
-      }}
     >
-      <div className={`w-12 h-12 sm:w-16 sm:h-16 ${gradient} rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-        <span className="text-xl sm:text-2xl">{icon}</span>
+      <div className={`w-14 h-14 ${gradient} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-all duration-300 group-hover:shadow-xl`}>
+        <Icon className="w-7 h-7 text-white" />
       </div>
-      <h4 className="font-bold text-gray-800 mb-2 sm:mb-3 text-base sm:text-lg group-hover:text-gray-900 transition-colors">{title}</h4>
-      <p className="text-gray-600 text-xs sm:text-sm leading-relaxed group-hover:text-gray-700 transition-colors line-clamp-3 sm:line-clamp-none">
+      <h4 className="font-bold text-gray-900 mb-3 text-lg group-hover:text-indigo-700 transition-colors">{title}</h4>
+      <p className="text-gray-600 text-sm leading-relaxed group-hover:text-gray-800 transition-colors">
         {description}
       </p>
-      <div className="mt-3 sm:mt-4 flex justify-center space-x-1 sm:space-x-2">
+      <div className="mt-4 flex flex-wrap gap-2 justify-center">
         {tags.map((tag, index) => (
           <span
             key={index}
-            className="bg-white/80 text-gray-700 text-xs px-2 sm:px-3 py-1 rounded-full border border-white/30 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105"
+            className="bg-white text-gray-700 text-xs px-3 py-1.5 rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:bg-gray-50"
           >
             {tag}
           </span>
@@ -46,339 +63,472 @@ const HomePage = () => {
     </div>
   );
 
-  const FloatingElement = ({ children, className, delay }) => (
+  const FloatingElement = ({ children, className }) => (
     <div
-      className={`absolute ${className} ${isVisible ? 'animate-float' : 'opacity-0'
+      className={`absolute hidden md:block ${className} ${isVisible ? 'animate-float' : 'opacity-0'
         }`}
-      style={{ animationDelay: `${delay}ms` }}
+      
     >
       {children}
     </div>
   );
 
+  const MobileMenu = () => (
+    <div className={`fixed inset-0 bg-white/95 backdrop-blur-xl z-50 transform transition-all duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className="flex flex-col h-full">
+        <div className="flex justify-between items-center p-6 border-b">
+          <img src={Athenura} alt="Athenura Logo" className="h-10" />
+          <button onClick={() => setIsMenuOpen(false)} className="p-2">
+            <X className="w-6 h-6 text-gray-700" />
+          </button>
+        </div>
+        
+        <div className="flex-1 p-6 space-y-6">
+          <Link 
+            to="/login" 
+            className="flex items-center justify-between p-4 rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <span className="font-semibold">🔑 Login</span>
+            <ChevronRight className="w-5 h-5" />
+          </Link>
+          
+          <Link 
+            to="/register" 
+            className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:shadow-lg transition-all"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <span className="font-semibold">✨ Register</span>
+            <ChevronRight className="w-5 h-5" />
+          </Link>
+          
+          <Link 
+            to="/apply" 
+            className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <span className="font-semibold">🎓 Apply for Internship</span>
+            <ChevronRight className="w-5 h-5" />
+          </Link>
+          
+          <Link 
+            to="/review-team-login" 
+            className="flex items-center justify-between p-4 rounded-2xl bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <span className="font-semibold">👥 Review Team Login</span>
+            <ChevronRight className="w-5 h-5" />
+          </Link>
+          
+          <Link 
+            to="/intern-incharge-login" 
+            className="flex items-center justify-between p-4 rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <span className="font-semibold">👨‍💼 Intern Incharge Login</span>
+            <ChevronRight className="w-5 h-5" />
+          </Link>
+          
+          <Link 
+            to="/intern-incharge-register" 
+            className="flex items-center justify-between p-4 rounded-2xl bg-orange-50 text-orange-700 hover:bg-orange-100 transition-colors"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <span className="font-semibold">📝 Register as Incharge</span>
+            <ChevronRight className="w-5 h-5" />
+          </Link>
+        </div>
+        
+        <div className="p-6 border-t">
+          <p className="text-center text-sm text-gray-500">
+            © {new Date().getFullYear()} Athenura. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const NavItem = ({ to, children, icon: Icon, variant = "default" }) => {
+    const baseClasses = "px-4 py-2 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2";
+    const variants = {
+      default: "text-gray-700 hover:text-indigo-600 hover:bg-indigo-50",
+      primary: "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:shadow-lg hover:scale-105",
+      outline: "border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-600 hover:text-white"
+    };
+    
+    return (
+      <Link to={to} className={`${baseClasses} ${variants[variant]}`}>
+        {Icon && <Icon className="w-4 h-4" />}
+        <span>{children}</span>
+      </Link>
+    );
+  };
+
   return (
-    <div className="relative min-h-screen flex flex-col overflow-hidden bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50">
+    <div className="relative min-h-screen flex flex-col overflow-hidden bg-gradient-to-br from-gray-50 via-white to-indigo-50">
       {/* Animated Background Gradient */}
       <div
-        className="absolute inset-0 opacity-30 transition-all duration-1000"
+        className="fixed inset-0 transition-all duration-300 ease-out pointer-events-none"
         style={{
-          background: `radial-gradient(600px at ${mousePosition.x}px ${mousePosition.y}px, rgba(120, 119, 198, 0.15), transparent 80%)`
+          background: `radial-gradient(800px at ${mousePosition.x}px ${mousePosition.y}px, rgba(99, 102, 241, 0.08), transparent 80%)`
         }}
       />
 
       {/* Enhanced Background Blobs */}
-      <div className="absolute -top-20 -left-20 w-64 h-64 sm:-top-32 sm:-left-32 sm:w-[500px] sm:h-[500px] bg-gradient-to-r from-indigo-300 to-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 sm:opacity-25 animate-blob"></div>
-      <div className="absolute top-1/3 -right-16 w-48 h-48 sm:top-1/3 sm:-right-40 sm:w-96 sm:h-96 bg-gradient-to-r from-pink-300 to-rose-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 sm:opacity-25 animate-blob animation-delay-2000"></div>
-      <div className="absolute -bottom-24 left-1/4 w-64 h-64 sm:-bottom-32 sm:left-1/2 sm:w-[500px] sm:h-[500px] bg-gradient-to-r from-cyan-300 to-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 sm:opacity-25 animate-blob animation-delay-4000"></div>
+      <div className="fixed -top-40 -left-40 w-[600px] h-[600px] bg-gradient-to-r from-indigo-200 to-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+      <div className="fixed top-1/3 -right-40 w-[500px] h-[500px] bg-gradient-to-r from-pink-200 to-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+      <div className="fixed -bottom-40 left-1/3 w-[700px] h-[700px] bg-gradient-to-r from-cyan-200 to-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
 
       {/* Floating Elements */}
-      <FloatingElement className="top-20 left-10 text-2xl" delay="200">🚀</FloatingElement>
-      <FloatingElement className="top-40 right-16 text-xl" delay="600">💼</FloatingElement>
-      <FloatingElement className="bottom-40 left-20 text-xl" delay="1000">🌟</FloatingElement>
-      <FloatingElement className="bottom-20 right-24 text-2xl" delay="1400">🎯</FloatingElement>
+      <FloatingElement className="top-32 left-16 text-3xl">🚀</FloatingElement>
+      <FloatingElement className="top-48 right-20 text-2xl">💡</FloatingElement>
+      <FloatingElement className="bottom-48 left-24 text-2xl">🌟</FloatingElement>
+      <FloatingElement className="bottom-32 right-32 text-3xl">🎯</FloatingElement>
 
       {/* Enhanced Navbar */}
-      <nav className="backdrop-blur-lg bg-white/80 border-b border-white/30 flex justify-between items-center px-4 sm:px-6 lg:px-8 py-3 sm:py-4 shadow-lg sticky top-0 z-50 transition-all duration-300 hover:bg-white/90">
+      <nav className="backdrop-blur-xl bg-white/90 border-b border-white/40 flex justify-between items-center px-4 sm:px-6 lg:px-8 py-4 shadow-lg sticky top-0 z-40 transition-all duration-300">
         <div className="flex items-center space-x-3 group cursor-pointer">
           <img
-            src={Graphura}
-            alt="Graphura Logo"
-            className="h-8 sm:h-10 lg:h-12 w-auto transition-transform duration-300 group-hover:scale-110"
+            src={Athenura}
+            alt="Athenura Logo"
+            className="h-10 lg:h-12 w-auto transition-transform duration-300 group-hover:scale-105"
           />
         </div>
 
-        <div className="flex space-x-2 sm:space-x-4">
-          <Link
-            to="/login"
-            className="px-4 sm:px-5 py-2 text-sm sm:text-base text-indigo-700 font-semibold border-2 border-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
-          >
-            🔑 Login
-          </Link>
-          <Link
-            to="/register"
-            className="px-4 sm:px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-sm sm:text-base font-semibold hover:shadow-xl hover:scale-105 transform hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap shadow-md flex items-center space-x-2"
-          >
-            <span>✨</span>
-            <span>Register</span>
-          </Link>
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center space-x-4">
+          <div className="flex space-x-2">
+            <NavItem to="/login" variant="outline">🔑 Login</NavItem>
+            <NavItem to="/register" variant="primary">✨ Register</NavItem>
+          </div>
         </div>
+
+        {/* Mobile Menu Button */}
+        <button 
+          onClick={() => setIsMenuOpen(true)}
+          className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          <Menu className="w-6 h-6 text-gray-700" />
+        </button>
       </nav>
 
+      {/* Mobile Menu */}
+      <MobileMenu />
+
       {/* Enhanced Hero Section */}
-      <main className="flex flex-1 flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8 py-8 sm:py-16 relative z-10">
-        {/* Main Heading with Typing Effect */}
-        <div className={`mb-4 sm:mb-6 lg:mb-12 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}>
-          <h2 className="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-gray-900 mb-4 sm:mb-6 leading-tight">
-            Engage & Collaborate With{" "}
-            <span className="block bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mt-2 sm:mt-3 animate-gradient-x">
-              Your Intern Community
-            </span>
-          </h2>
-        </div>
-
-        {/* Enhanced CTA Buttons */}
-        <div className={`flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 w-full max-w-xs sm:max-w-none transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}>
-          <Link
-            to="/apply"
-            className="group bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 sm:px-8 sm:px-10 py-3 sm:py-4 rounded-2xl text-base sm:text-lg font-bold shadow-2xl hover:shadow-3xl transform hover:scale-105 hover:-translate-y-1 transition-all duration-300 text-center relative overflow-hidden"
-          >
-            <span className="relative z-10 flex items-center justify-center space-x-3">
-              <span>🎓</span>
-              <span>Apply for Internship</span>
-              <span className="group-hover:translate-x-1 transition-transform">→</span>
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </Link>
-
-          <Link
-            to="/login"
-            className="group px-6 sm:px-8 sm:px-10 py-3 sm:py-4 border-3 border-indigo-600 text-indigo-600 rounded-2xl text-base sm:text-lg font-bold hover:bg-indigo-600 hover:text-white transform hover:scale-105 hover:-translate-y-1 transition-all duration-300 text-center shadow-lg hover:shadow-xl"
-          >
-            <span className="flex items-center justify-center space-x-3">
-              <span>🔐</span>
-              <span>Login</span>
-            </span>
-          </Link>
-
-          <Link
-            to="/review-team-login"
-            className="group px-6 sm:px-8 sm:px-10 py-3 sm:py-4 border-3 border-green-600 text-green-600 rounded-2xl text-base sm:text-lg font-bold hover:bg-green-600 hover:text-white transform hover:scale-105 hover:-translate-y-1 transition-all duration-300 text-center shadow-lg hover:shadow-xl"
-          >
-            <span className="flex items-center justify-center space-x-3">
-              <span>👥</span>
-              <span>Review Team</span>
-            </span>
-          </Link>
-        </div>
-
-        {/* Enhanced InternIncharge Section */}
-        <div className={`mt-8 sm:mt-12 p-4 sm:p-6 bg-white/70 backdrop-blur-xl rounded-3xl border-2 border-white/50 shadow-2xl w-full max-w-md sm:max-w-4xl transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}>
-          <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center justify-center space-x-3 flex-wrap">
-            <span>👨‍💼</span>
-            <span>Are you an Intern Incharge?</span>
-          </h3>
-          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-6">
-            <Link
-              to="/intern-incharge-login"
-              className="group px-4 sm:px-6 sm:px-8 py-2 sm:py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-sm sm:text-base font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 hover:-translate-y-0.5 transition-all duration-300 text-center flex items-center justify-center space-x-2"
-            >
-              <span>🚪</span>
-              <span>Intern Incharge Login</span>
-            </Link>
-          <Link
-            to="/intern-incharge-register"
-            className="group px-4 sm:px-6 sm:px-8 py-2 sm:py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl text-sm sm:text-base font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 hover:-translate-y-0.5 transition-all duration-300 text-center flex items-center justify-center space-x-2"
-          >
-            <span>📝</span>
-            <span>Register as Incharge / Review </span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Enhanced Features Grid */}
-      {/* What Interns Gain Section */}
-      <div
-        className={`mt-12 sm:mt-16 lg:mt-20 lg:mt-24 max-w-5xl w-full text-center transition-all duration-1000 delay-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-      >
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 mb-4 sm:mb-6">
-          What Interns Gain from This Internship
-        </h2>
-        <p className="text-gray-600 max-w-3xl mx-auto text-sm sm:text-base lg:text-lg line-clamp-4 sm:line-clamp-none">
-          Every intern at <span className="font-semibold text-indigo-600">Graphura</span> experiences
-          a journey that blends learning, practical exposure, and personal growth.
-          Here’s what you’ll take away from your internship with us.
-        </p>
-
-        {/* Benefits Grid */}
-        <div className="mt-8 sm:mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 text-left">
-          {[
-            {
-              emoji: "💻",
-              title: "Hands-on Project Experience",
-              desc: "Work on real-world projects that enhance your portfolio and showcase your practical skills in the tech industry.",
-            },
-            {
-              emoji: "🧠",
-              title: "Skill Development",
-              desc: "Gain expertise in modern tools, technologies, and teamwork — all essential to become industry-ready.",
-            },
-            {
-              emoji: "👨‍🏫",
-              title: "Mentorship & Guidance",
-              desc: "Learn directly from experienced professionals who guide you through challenges and career-building decisions.",
-            },
-            {
-              emoji: "🏆",
-              title: "Internship Certificate",
-              desc: "Receive a verified internship certificate upon successful completion, validating your contribution and learning.",
-            },
-            {
-              emoji: "🚀",
-              title: "Career Growth Opportunities",
-              desc: "Outstanding performers may receive pre-placement offers, letters of recommendation, or extended internships.",
-            },
-            {
-              emoji: "🌐",
-              title: "Professional Networking",
-              desc: "Connect with like-minded peers, mentors, and industry experts — expanding your professional network for future opportunities.",
-            },
-          ].map((benefit, index) => (
-            <div
-              key={index}
-              className="bg-white/70 backdrop-blur-lg p-4 sm:p-6 rounded-2xl border border-white/40 shadow-lg hover:shadow-xl transition-all duration-500 hover:-translate-y-2"
-            >
-              <div className="text-2xl sm:text-3xl mb-2 sm:mb-3">{benefit.emoji}</div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
-                {benefit.title}
-              </h3>
-              <p className="text-gray-600 text-xs sm:text-sm lg:text-base leading-relaxed line-clamp-3 sm:line-clamp-none">
-                {benefit.desc}
+      <main className="flex-1 relative z-10">
+        <section id="hero" className="pt-12 sm:pt-20 pb-16 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            {/* Main Heading */}
+            <div className={`text-center transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black text-gray-900 mb-6 leading-tight">
+                Shape Your Future with{" "}
+                <span className="block mt-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient-x">
+                  Real-World Experience
+                </span>
+              </h1>
+              <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto mb-10">
+                Join a community of passionate interns and transform your career through hands-on projects, expert mentorship, and meaningful collaboration.
               </p>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Stats Section */}
-      <div
-        className={`mt-16 sm:mt-20 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 max-w-5xl w-full transition-all duration-1000 delay-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-      >
-        {[
-          {
-            number: "500+",
-            label: "Active Interns",
-            subtext: "Learning with us now",
-            emoji: "🎓",
-            gradient: "from-blue-500 to-indigo-500",
-          },
-          {
-            number: "50+",
-            label: "Expert Mentors",
-            subtext: "Guiding every step",
-            emoji: "👨‍🏫",
-            gradient: "from-green-500 to-emerald-500",
-          },
-          {
-            number: "95%",
-            label: "Success Rate",
-            subtext: "Interns placed or certified",
-            emoji: "📊",
-            gradient: "from-purple-500 to-pink-500",
-          },
-          {
-            number: "24/7",
-            label: "Dedicated Support",
-            subtext: "Always there for you",
-            emoji: "🛠️",
-            gradient: "from-orange-500 to-yellow-500",
-          },
-        ].map((stat, index) => (
-          <div
-            key={index}
-            className="bg-white/70 backdrop-blur-xl p-4 sm:p-6 rounded-2xl border border-white/40 shadow-lg text-center group hover:scale-105 hover:-translate-y-1 transition-all duration-500 relative overflow-hidden"
-          >
-            <div
-              className={`absolute inset-0 opacity-10 bg-gradient-to-br ${stat.gradient} transition-all group-hover:opacity-20`}
-            ></div>
-            <div className="relative">
-              <div className="text-2xl sm:text-3xl mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
-                {stat.emoji}
-              </div>
-              <div
-                className={`text-2xl sm:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}
+            {/* Enhanced CTA Buttons */}
+            <div className={`flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mb-16 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+              <Link
+                to="/apply"
+                className="group bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-2xl text-lg font-bold shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 text-center relative overflow-hidden"
               >
-                {stat.number}
+                <span className="relative z-10 flex items-center justify-center space-x-3">
+                  <Briefcase className="w-6 h-6" />
+                  <span>Apply for Internship</span>
+                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </span>
+              </Link>
+
+              <Link
+                to="/login"
+                className="group px-8 py-4 border-2 border-indigo-600 text-indigo-600 rounded-2xl text-lg font-bold hover:bg-indigo-600 hover:text-white transform hover:scale-105 transition-all duration-300 text-center shadow-lg hover:shadow-xl flex items-center justify-center space-x-3"
+              >
+                <span>🔐</span>
+                <span>Login to Dashboard</span>
+              </Link>
+            </div>
+
+            {/* Role-Based Access Section */}
+            <div className={`max-w-4xl mx-auto transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Intern Incharge Section */}
+                <div className="bg-gradient-to-br from-emerald-50 to-white p-6 rounded-3xl border border-emerald-100 shadow-xl">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-green-500 rounded-2xl flex items-center justify-center">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Intern Incharge</h3>
+                  </div>
+                  <p className="text-gray-600 mb-6">Manage and monitor your team's progress with comprehensive tools.</p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Link
+                      to="/intern-incharge-login"
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 text-center"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/intern-incharge-register"
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 text-center"
+                    >
+                      Register
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Review Team Section */}
+                <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-3xl border border-blue-100 shadow-xl">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center">
+                      <Award className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Review Team</h3>
+                  </div>
+                  <p className="text-gray-600 mb-6">Evaluate intern submissions and provide valuable feedback.</p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Link
+                      to="/review-team-login"
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 text-center"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/intern-incharge-register"
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 text-center"
+                    >
+                      Register
+                    </Link>
+                  </div>
+                </div>
               </div>
-              <div className="text-sm sm:text-base font-semibold text-gray-700 mt-1">
-                {stat.label}
-              </div>
-              <div className="text-xs text-gray-500 mt-1">{stat.subtext}</div>
             </div>
           </div>
-        ))}
-      </div>
+        </section>
 
+        {/* Features Section */}
+        <section id="features" className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-indigo-50">
+          <div className="max-w-7xl mx-auto">
+            <div className={`text-center mb-12 transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+                Everything You Need for a{" "}
+                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Successful Internship
+                </span>
+              </h2>
+              <p className="text-gray-600 text-lg max-w-3xl mx-auto">
+                Our platform provides all the tools and resources to make your internship journey productive and rewarding.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <FeatureCard
+                icon={Code}
+                title="Real Projects"
+                description="Work on actual client projects with modern tech stacks and agile methodologies."
+                tags={["React", "Node.js", "Python", "ML"]}
+                gradient="bg-gradient-to-r from-indigo-500 to-purple-500"
+              />
+              <FeatureCard
+                icon={Users}
+                title="Team Collaboration"
+                description="Collaborate with peers using integrated tools for seamless teamwork and communication."
+                tags={["Slack", "Git", "Jira", "Figma"]}
+                gradient="bg-gradient-to-r from-emerald-500 to-green-500"
+              />
+              <FeatureCard
+                icon={Target}
+                title="Goal Tracking"
+                description="Set and track your learning objectives with personalized milestones and progress analytics."
+                tags={["Milestones", "Analytics", "Feedback", "Reviews"]}
+                gradient="bg-gradient-to-r from-blue-500 to-cyan-500"
+              />
+              <FeatureCard
+                icon={Briefcase}
+                title="Career Resources"
+                description="Access exclusive job opportunities, resume reviews, and interview preparation materials."
+                tags={["Jobs", "Resume", "Interviews", "Network"]}
+                gradient="bg-gradient-to-r from-orange-500 to-red-500"
+              />
+              <FeatureCard
+                icon={Award}
+                title="Certification"
+                description="Earn verified certificates and badges that showcase your skills to employers."
+                tags={["Certificates", "Badges", "Portfolio", "Verification"]}
+                gradient="bg-gradient-to-r from-purple-500 to-pink-500"
+              />
+              <FeatureCard
+                icon={Globe}
+                title="Global Network"
+                description="Connect with interns and professionals worldwide through our community platform."
+                tags={["Community", "Events", "Mentors", "Alumni"]}
+                gradient="bg-gradient-to-r from-cyan-500 to-blue-500"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Benefits Section */}
+        <section id="benefits" className="py-16 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className={`text-center mb-12 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                Transformative{" "}
+                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Learning Experience
+                </span>
+              </h2>
+              <p className="text-gray-600 text-lg max-w-3xl mx-auto">
+                Every intern gains valuable skills and experiences that shape their professional journey.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                {
+                  icon: "💻",
+                  title: "Industry-Ready Skills",
+                  description: "Master tools and technologies used by top tech companies worldwide.",
+                  color: "from-blue-500 to-indigo-500"
+                },
+                {
+                  icon: "👥",
+                  title: "Professional Network",
+                  description: "Connect with mentors, alumni, and industry experts for guidance.",
+                  color: "from-emerald-500 to-green-500"
+                },
+                {
+                  icon: "📈",
+                  title: "Career Growth",
+                  description: "Receive PPOs, recommendations, and career advancement opportunities.",
+                  color: "from-purple-500 to-pink-500"
+                },
+                {
+                  icon: "🎓",
+                  title: "Academic Credit",
+                  description: "Earn credits and certifications recognized by institutions.",
+                  color: "from-orange-500 to-red-500"
+                },
+                {
+                  icon: "💼",
+                  title: "Portfolio Projects",
+                  description: "Build impressive projects that showcase your capabilities.",
+                  color: "from-cyan-500 to-blue-500"
+                },
+                {
+                  icon: "🌟",
+                  title: "Personal Development",
+                  description: "Develop soft skills, confidence, and professional demeanor.",
+                  color: "from-violet-500 to-purple-500"
+                }
+              ].map((benefit, index) => (
+                <div
+                  key={index}
+                  className={`bg-gradient-to-br ${benefit.color} p-6 rounded-3xl text-white transform transition-all duration-500 hover:scale-105 hover:shadow-2xl`}
+                >
+                  <div className="text-3xl mb-4">{benefit.icon}</div>
+                  <h3 className="text-xl font-bold mb-3">{benefit.title}</h3>
+                  <p className="text-white/90">{benefit.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section id="stats" className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50">
+          <div className="max-w-7xl mx-auto">
+            <div className={`grid grid-cols-2 md:grid-cols-4 gap-6 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+              {[
+                {
+                  number: "1000+",
+                  label: "Active Interns",
+                  icon: "👥",
+                  color: "text-blue-600"
+                },
+                {
+                  number: "200+",
+                  label: "Projects Completed",
+                  icon: "🚀",
+                  color: "text-emerald-600"
+                },
+                {
+                  number: "98%",
+                  label: "Satisfaction Rate",
+                  icon: "⭐",
+                  color: "text-amber-600"
+                },
+                {
+                  number: "50+",
+                  label: "Partner Companies",
+                  icon: "🏢",
+                  color: "text-purple-600"
+                }
+              ].map((stat, index) => (
+                <div
+                  key={index}
+                  className="bg-white p-6 rounded-3xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-500 hover:-translate-y-2"
+                >
+                  <div className="text-3xl mb-3">{stat.icon}</div>
+                  <div className={`text-3xl font-bold ${stat.color} mb-2`}>{stat.number}</div>
+                  <div className="text-gray-700 font-semibold">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+    
       </main>
 
       {/* Enhanced Footer */}
-      <footer className="bg-white/80 backdrop-blur-lg text-center py-4 sm:py-6 text-gray-600 text-xs sm:text-sm border-t border-white/30 mt-16">
-        <div className="max-w-6xl mx-auto px-4">
-          <p>
-            © {new Date().getFullYear()}{" "}
-            <span className="font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Graphura India Private Limited
-            </span>. All rights reserved.
-          </p>
-          <p className="mt-2 text-xs text-gray-500">
-            Building the future of internship management, one connection at a time.
-          </p>
+      <footer className="bg-gradient-to-b from-white to-gray-50 border-t border-gray-100 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center space-x-3 mb-6 md:mb-0">
+              <img src={Athenura} alt="Athenura Logo" className="h-10" />
+              <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                Athenura
+              </span>
+            </div>
+            
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link to="/login" className="text-gray-600 hover:text-indigo-600 transition-colors">
+                🔑 Login
+              </Link>
+              <Link to="/register" className="text-gray-600 hover:text-indigo-600 transition-colors">
+                ✨ Register
+              </Link>
+              <Link to="/apply" className="text-gray-600 hover:text-indigo-600 transition-colors">
+                🎓 Apply
+              </Link>
+              <Link to="/review-team-login" className="text-gray-600 hover:text-indigo-600 transition-colors">
+                👥 Review Team
+              </Link>
+              <Link to="/intern-incharge-login" className="text-gray-600 hover:text-indigo-600 transition-colors">
+                👨‍💼 Incharge Login
+              </Link>
+            </div>
+          </div>
+          
+          <div className="mt-8 pt-8 border-t border-gray-200 text-center">
+            <p className="text-gray-500">
+              © {new Date().getFullYear()} Athenura. Empowering the next generation of professionals.
+            </p>
+            <p className="text-gray-400 text-sm mt-2">
+              All links preserved with enhanced UI and mobile-responsive design.
+            </p>
+          </div>
         </div>
       </footer>
 
-      <style jsx>{`
-        @keyframes float {
-         0%, 100% { transform: translateY(0px) rotate(0deg); }
-         50% { transform: translateY(-20px) rotate(5deg); }
-        }
-        @keyframes fade-in-up {
-        from {
-          opacity: 0;
-          transform: translateY(30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        }
-        @keyframes gradient-x {
-         0%, 100% { background-position: 0% 50%; }
-         50% { background-position: 100% 50%; }
-        }
-        @keyframes blob {
-         0% { transform: translate(0px, 0px) scale(1); }
-         33% { transform: translate(30px, -50px) scale(1.1); }
-         66% { transform: translate(-20px, 20px) scale(0.9); }
-         100% { transform: translate(0px, 0px) scale(1); }
-        }
-        .animate-float {
-         animation: float 6s ease-in-out infinite;
-        }
-        .animate-fade-in-up {
-         animation: fade-in-up 0.8s ease-out forwards;
-        }
-        .animate-gradient-x {
-         background-size: 200% 200%;
-         animation: gradient-x 3s ease infinite;
-        }
-        .animate-blob {
-         animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-         animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-         animation-delay: 4s;
-        }
-        @media (max-width: 640px) {
-          .line-clamp-3 {
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-          }
-          .line-clamp-4 {
-            display: -webkit-box;
-            -webkit-line-clamp: 4;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-          }
-        }
-      `}</style>
+      {/* Custom Animations */}
+ 
     </div>
   );
 };

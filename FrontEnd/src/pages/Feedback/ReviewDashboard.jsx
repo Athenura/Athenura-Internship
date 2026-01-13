@@ -399,7 +399,8 @@ const ReviewTeamDashboard = () => {
 
         const statusOptions = ["pending", "issued", "rejected"];
         const isUpdating = updatingStatus.has(feedbackId);
-        const isDisabled = status === "issued";
+        // const isDisabled = status === "issued";
+        const isDisabled = false;
 
         return (
             <div className="flex items-center space-x-2">

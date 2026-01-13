@@ -50,7 +50,7 @@ export const createIntern = async (req, res) => {
     // Email message (same as WhatsApp style)
     const emailMsg = `Dear ${newIntern.fullName},
 
-Thank you for your interest in joining Graphura and submitting your application for the ${newIntern.domain} internship position.
+Thank you for your interest in joining Athenura and submitting your application for the ${newIntern.domain} internship position.
 
 📌 Internship Domain: ${newIntern.domain}
 📌 Duration: ${newIntern.duration}
@@ -62,10 +62,10 @@ You can expect to hear back from us within the next 2-3 business days regarding 
 Should you have any questions in the meantime, please don't hesitate to reach out.
 
 Best regards,
-The Graphura Team
-🌐 www.graphura.online`;
+The Athenura Team
+🌐 www.athenura.in`;
 
-    await sendEmail(newIntern.email, "Graphura - Internship Application Received", `<pre style="font-family:inherit;">${emailMsg}</pre>`);
+    await sendEmail(newIntern.email, "Athenura - Internship Application Received", `<pre style="font-family:inherit;">${emailMsg}</pre>`);
 
     res.status(201).json({ message: "Intern created successfully", intern: newIntern });
 

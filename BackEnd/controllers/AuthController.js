@@ -140,10 +140,10 @@ export const forgotPassword = async (req, res) => {
     // Send OTP via email
     await sendEmail(
       email,
-      "Password Reset OTP - Graphura Intern System",
+      "Password Reset OTP - Athenura Intern System",
       `
   <div style="font-family: Arial, sans-serif; padding: 10px;">
-    <h2 style="color:#4f46e5;">Graphura Intern System</h2>
+    <h2 style="color:#4f46e5;">Athenura Intern System</h2>
     <p>Use the OTP below to reset your password:</p>
     <h1 style="color:#16a34a;">${otp}</h1>
     <p>This OTP is valid for <b>5 minutes</b>.</p>
@@ -239,7 +239,7 @@ export const resendOtp = async (req, res) => {
 
     await sendEmail(
       email,
-      "Resend OTP - Graphura Intern System",
+      "Resend OTP - Athenura Intern System",
       `
     <h2>Your new OTP</h2>
     <h3>${otp}</h3>

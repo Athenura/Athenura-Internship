@@ -274,7 +274,7 @@ export const forgotPassword = async (req, res) => {
       "Password Reset OTP - Intern Incharge",
       `
     <div style="font-family: Arial, sans-serif; padding: 16px; background:#f9fafb;">
-      <h2 style="color:#4f46e5;">Graphura Intern System</h2>
+      <h2 style="color:#4f46e5;">Athenura Intern System</h2>
       <p>Hello ${incharge.fullName || "Incharge"},</p>
       <p>Your OTP for resetting password is:</p>
       <h1 style="color:#16a34a; letter-spacing:4px;">${otp}</h1>
@@ -573,13 +573,13 @@ ${getStatusMessage(status)}
 If you have any questions or concerns regarding this attendance record, please contact your domain incharge.
 
 Best regards,
-Graphura Team
-🌐 www.graphura.online`;
+ Athenura Team
+🌐 www.athenura.in`;
 
     if (status == "Present") {
       await sendEmail(
         intern.email,
-        `Graphura - Attendance Update for ${formattedDate}`,
+        `Athenura - Attendance Update for ${formattedDate}`,
         `<pre style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5; white-space: pre-wrap;">${emailMsg}</pre>`
       );
     }
@@ -841,14 +841,14 @@ export const ExtendedDays = async (req, res) => {
       <body>
           <div class="container">
               <div class="header">
-                  <h1>Graphura Internship Extended!</h1>
+                  <h1>Athenura Internship Extended!</h1>
                   <p>Your internship has been extended</p>
               </div>
               <div class="content">
                   <h2>Hello ${intern.fullName},</h2>
-                  
-                  <p>We're pleased to inform you that your internship at Graphura has been extended.</p>
-                  
+
+                  <p>We're pleased to inform you that your internship at Athenura has been extended.</p>
+
                   <div class="highlight">
                       <h3>📅 Extension Details:</h3>
                       <p><strong>Additional Days:</strong> ${extendedDays} days</p>
@@ -860,7 +860,7 @@ export const ExtendedDays = async (req, res) => {
                   <p>If you have any questions, please don't hesitate to contact your department incharge.</p>
 
                   <p>Best regards,<br>
-                  <strong>Graphura Team</strong></p>
+                  <strong>Athenura Team</strong></p>
               </div>
               <div class="footer">
                   <p>This is an automated notification. Please do not reply to this email.</p>
@@ -1117,7 +1117,7 @@ export const approvedLeaveStatus = async (req, res) => {
     await leave.save();
 
     // Send approval email to intern
-    const subject = `Leave Request Approved - Graphura Internship Program`;
+    const subject = `Leave Request Approved - Athenura Internship Program`;
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -1136,7 +1136,7 @@ export const approvedLeaveStatus = async (req, res) => {
         <div class="container">
           <div class="header">
             <h1>Leave Request Approved</h1>
-            <p>Graphura Internship Program</p>
+            <p>Athenura Internship Program</p>
           </div>
           <div class="content">
             <div class="status-approved">
@@ -1156,8 +1156,8 @@ export const approvedLeaveStatus = async (req, res) => {
             <p>If you have any questions, please contact your Intern Incharge.</p>
           </div>
           <div class="footer">
-            <p>This is an automated notification from Graphura Internship Program.</p>
-            <p>© ${new Date().getFullYear()} Graphura India Private Limited. All rights reserved.</p>
+            <p>This is an automated notification from Athenura Internship Program.</p>
+            <p>© ${new Date().getFullYear()} Athenura India Private Limited. All rights reserved.</p>
           </div>
         </div>
       </body>
@@ -1200,7 +1200,7 @@ export const rejectLeaveStatus = async (req, res) => {
     await leave.save();
 
     // Send rejection email to intern
-    const subject = `Leave Request Update - Graphura Internship Program`;
+    const subject = `Leave Request Update - Athenura Internship Program`;
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -1220,7 +1220,7 @@ export const rejectLeaveStatus = async (req, res) => {
         <div class="container">
           <div class="header">
             <h1>Leave Request Update</h1>
-            <p>Graphura Internship Program</p>
+            <p>Athenura Internship Program</p>
           </div>
           <div class="content">
             <div class="status-rejected">
@@ -1242,8 +1242,8 @@ export const rejectLeaveStatus = async (req, res) => {
             <p>If you believe this is an error or have additional information to share, please reach out to your Intern Incharge directly.</p>
           </div>
           <div class="footer">
-            <p>This is an automated notification from Graphura Internship Program.</p>
-            <p>© ${new Date().getFullYear()} Graphura India Private Limited . All rights reserved.</p>
+            <p>This is an automated notification from Athenura Internship Program.</p>
+            <p>© ${new Date().getFullYear()} Athenura India Private Limited . All rights reserved.</p>
           </div>
         </div>
       </body> 

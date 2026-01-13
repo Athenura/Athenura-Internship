@@ -159,7 +159,7 @@ export const exportFeedbacks = async (req, res) => {
     // Validate feedback IDs are valid MongoDB ObjectIds
     const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
     const validFeedbackIds = feedbackIds.filter(id => isValidObjectId(id));
-    
+
     if (validFeedbackIds.length === 0) {
       return res.status(400).json({ message: "Invalid feedback IDs provided" });
     }
@@ -182,7 +182,7 @@ export const exportFeedbacks = async (req, res) => {
       const internshipInfo = fb.internshipInfo || {};
       const media = fb.media || {};
       const internDetails = fb.internDetails || {};
-      
+
       // Use internDetails as fallback if intern population fails
       const internName = intern.fullName || internDetails.fullName || 'N/A';
       const internEmail = intern.email || internDetails.email || 'N/A';
@@ -230,7 +230,7 @@ export const exportFeedbacks = async (req, res) => {
     // 📦 Generate File
     // -----------------------------
     const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    
+
     if (options.format === "csv") {
       // ✅ Export as CSV
       try {
@@ -241,19 +241,19 @@ export const exportFeedbacks = async (req, res) => {
           quote: '"',
           escape: '"'
         });
-        
+
         const csv = parser.parse(exportData);
-        
+
         res.header("Content-Type", "text/csv; charset=utf-8");
         res.header("Content-Disposition", `attachment; filename="intern-feedbacks-${timestamp}.csv"`);
         res.header("X-Content-Type-Options", "nosniff");
-        
+
         return res.send('\uFEFF' + csv); // BOM for Excel compatibility
       } catch (csvError) {
         console.error("CSV Generation Error:", csvError);
         return res.status(500).json({ message: "Failed to generate CSV file" });
       }
-      
+
     } else {
       // ✅ Export as Excel (.xlsx) - Default
       try {
@@ -292,8 +292,8 @@ export const exportFeedbacks = async (req, res) => {
         const headerRow = sheet.getRow(1);
         headerRow.height = 25;
         headerRow.eachCell((cell) => {
-          cell.font = { 
-            bold: true, 
+          cell.font = {
+            bold: true,
             color: { argb: "FFFFFFFF" },
             size: 11
           };
@@ -308,8 +308,8 @@ export const exportFeedbacks = async (req, res) => {
             bottom: { style: 'thin' },
             right: { style: 'thin' }
           };
-          cell.alignment = { 
-            vertical: "middle", 
+          cell.alignment = {
+            vertical: "middle",
             horizontal: "center",
             wrapText: true
           };
@@ -367,17 +367,17 @@ export const exportFeedbacks = async (req, res) => {
 
   } catch (error) {
     console.error("❌ Export Feedbacks Error:", error);
-    
+
     // More specific error messages
     if (error.name === 'CastError') {
       return res.status(400).json({ message: "Invalid feedback ID format" });
     }
-    
+
     if (error.code === 'ETIMEDOUT') {
       return res.status(504).json({ message: "Export request timed out" });
     }
 
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Export failed due to server error",
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
@@ -394,8 +394,8 @@ export class CertificateGenerator {
       // Keep generating until a unique one is found
       while (isDuplicate) {
         // 🔹 Generate a random 9-digit number starting with 10016
-        const randomPart = Math.floor(10000 + Math.random() * 89999); // 5 random digits
-        newNumber = `10016${randomPart}`; // e.g. 1001653842 (total 9 digits)
+        const randomPart = Math.floor(100000 + Math.random() * 899999); // 6 random digits
+        newNumber = `100${randomPart}`; // e.g. 1001653842 (total 9 digits)
 
         // 🔍 Check in DB if it already exists
         const existing = await Intern.findOne({ certificateNumber: newNumber });
@@ -433,7 +433,7 @@ export class CertificateGenerator {
       const templateImage = fs.readFileSync(templatePath);
 
       // ✅ Load font
-      const fontPath = path.join(process.cwd(), "public", "fonts", "BerkshireSwash-Regular.ttf");
+      const fontPath = path.join(process.cwd(), "public", "fonts", "Rancho-Regular.ttf");
       if (!fs.existsSync(fontPath)) {
         throw new Error(`Font not found at: ${fontPath}`);
       }
@@ -464,35 +464,44 @@ export class CertificateGenerator {
       const name = internData.fullName || "";
       const nameWidth = this.getTextWidth(name, pacificoFont, 58);
       page.drawText(name, {
-        x: 480 - nameWidth / 2,
+        x: 490 - nameWidth / 2,
         y: 283,
-        size: 58,
+        size: 65,
         font: pacificoFont,
         color: rgb(0, 0, 0),
       });
 
       // 2️⃣ Completion Text — Default font
-      const completionText = `Has completed the internship program from ${internData.startMonth} to ${internData.endMonth} demonstrating exceptional dedication as an intern of the ${internData.domain} Department at Graphura India Private Limited.`;
+      const line1 = `Has completed the internship program from ${internData.startMonth} to ${internData.endMonth}`;
+      const line2 = ` showing exceptional dedication, professionalism, and contributions`;
+      const line3 = `in the ${internData.domain} Department at Athenura.  `;
 
-      const lines = this.splitTextIntoLines(completionText, defaultFont, 15, 500);
+
+      const lines = [line1, line2, line3];
+
+      const fontSize = 14.5;
       const lineHeight = 22;
+
+      // Center block vertically
       const totalTextHeight = lines.length * lineHeight;
-      const startY = 272 - totalTextHeight / 2;
+      const startY = 230 + totalTextHeight / 2 - lineHeight;
 
       lines.forEach((line, index) => {
-        const lineWidth = this.getTextWidth(line, defaultFont, 15);
+        const lineWidth = this.getTextWidth(line, defaultFont, fontSize);
+
         page.drawText(line, {
-          x: 490 - lineWidth / 2,
+          x: 485 - lineWidth / 2,
           y: startY - index * lineHeight,
-          size: 15,
+          size: fontSize,
           font: defaultFont,
           color: rgb(0, 0, 0),
         });
       });
 
+
       // 3️⃣ Certificate ID — Bold
       page.drawText(`Certificate ID: ${internData.certificateNumber}`, {
-        x: 50,
+        x: 150,
         y: 27,
         size: 10,
         font: boldFont,
@@ -500,8 +509,8 @@ export class CertificateGenerator {
       });
 
       // 4️⃣ Unique ID — Bold
-      page.drawText(`Unique ID: ${internData.uniqueId || "GRAPH/GR/101"}`, {
-        x: 560,
+      page.drawText(`Unique ID: ${internData.uniqueId}`, {
+        x: 530,
         y: 27,
         size: 10,
         font: boldFont,
@@ -567,7 +576,7 @@ export class CertificateGenerator {
     </div>
     <div class="content">
       <p>Dear <strong>${internName}</strong>,</p>
-      <p>Congratulations on successfully completing your internship at <strong>Graphura India Pvt. Ltd.</strong></p>
+      <p>Congratulations on successfully completing your internship at <strong>Athenura</strong></p>
       <p>Your certificate is attached to this email. You can download and share it on professional platforms like LinkedIn.</p>
       <ul>
         <li>Certificate ID: ${internData.certificateNumber}</li>
@@ -578,14 +587,14 @@ export class CertificateGenerator {
       </ul>
     </div>
     <div class="footer">
-      <p>Best regards,<br>Team Graphura</p>
+      <p>Best regards,<br>Team Athenura</p>
     </div>
   </div>
 </body>
 </html>`;
 
       const emailData = {
-        sender: { name: "Graphura", email: process.env.FROM_EMAIL },
+        sender: { name: "Athenura", email: process.env.FROM_EMAIL },
         to: [{ email: internEmail }],
         subject,
         htmlContent,
@@ -616,8 +625,8 @@ export class CertificateGenerator {
   static async sendRejectionEmail(internEmail, internName, feedbackId, rejectionReason = null) {
     try {
       const subject = `📝 Update Regarding Your Internship Certificate Request`;
-      
-const htmlContent = `
+
+      const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -640,7 +649,7 @@ const htmlContent = `
     <div class="content">
       <p>Dear <strong>${internName}</strong>,</p>
 
-      <p>We have reviewed your request for an internship completion certificate at <strong>Graphura India Pvt. Ltd.</strong></p>
+      <p>We have reviewed your request for an internship completion certificate at <strong>Athenura</strong></p>
 
       <p>After careful review, we found that your submission requires corrections. Therefore, your certificate request <strong>has not been approved at this time</strong>.</p>
 
@@ -667,7 +676,7 @@ const htmlContent = `
       <p>If you believe there has been any mistake or need clarification, please contact your supervisor or support team.</p>
     </div>
     <div class="footer">
-      <p>Best regards,<br><strong>Team Graphura</strong></p>
+      <p>Best regards,<br><strong>Team Athenura</strong></p>
     </div>
   </div>
 </body>
@@ -675,7 +684,7 @@ const htmlContent = `
 
 
       const emailData = {
-        sender: { name: "Graphura", email: process.env.FROM_EMAIL },
+        sender: { name: "Athenura", email: process.env.FROM_EMAIL },
         to: [{ email: internEmail }],
         subject,
         htmlContent,
@@ -700,7 +709,7 @@ const htmlContent = `
   static async sendPendingEmail(internEmail, internName, feedbackId) {
     try {
       const subject = `⏳ Your Certificate Request is Under Review`;
-      
+
       const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -721,7 +730,7 @@ const htmlContent = `
     </div>
     <div class="content">
       <p>Dear <strong>${internName}</strong>,</p>
-      <p>Thank you for submitting your internship certificate request to <strong>Graphura India Pvt. Ltd.</strong></p>
+      <p>Thank you for submitting your internship certificate request to <strong>Athenura</strong></p>
       
       <p>This is to inform you that your request is currently <strong>under review</strong> by our team.</p>
       
@@ -737,14 +746,14 @@ const htmlContent = `
       <p>We appreciate your patience during this process.</p>
     </div>
     <div class="footer">
-      <p>Best regards,<br>Team Graphura</p>
+      <p>Best regards,<br>Team Athenura</p>
     </div>
   </div>
 </body>
 </html>`;
 
       const emailData = {
-        sender: { name: "Graphura", email: process.env.FROM_EMAIL },
+        sender: { name: "Athenura", email: process.env.FROM_EMAIL },
         to: [{ email: internEmail }],
         subject,
         htmlContent,
@@ -795,7 +804,7 @@ export const updateCertificateStatus = async (req, res) => {
         if (certificateStatus === 'issued' && previousStatus !== 'issued') {
           // 🔥 AUTO-GENERATE CERTIFICATE when status changes to "issued"
           const certificateNumber = await CertificateGenerator.generateCertificateNumber();
-          
+
           // Get intern data from feedback
           const internData = {
             fullName: updatedFeedback.internDetails?.fullName,
@@ -810,7 +819,7 @@ export const updateCertificateStatus = async (req, res) => {
 
           // Generate certificate PDF
           const certificateBuffer = await CertificateGenerator.generateCertificate(internData);
-          
+
           // Send certificate via email
           await CertificateGenerator.sendCertificateEmail(
             internData.email,
@@ -822,7 +831,7 @@ export const updateCertificateStatus = async (req, res) => {
           // ✅ Update the feedback with certificate number
           await Feedback.findByIdAndUpdate(
             feedbackId,
-            { 
+            {
               'internshipInfo.certificateNumber': certificateNumber,
               certificateIssuedAt: new Date()
             },
@@ -841,7 +850,7 @@ export const updateCertificateStatus = async (req, res) => {
               { new: true }
             );
           }
-        } 
+        }
         else if (certificateStatus === 'rejected') {
           // 📧 Send rejection email
           await CertificateGenerator.sendRejectionEmail(
@@ -891,9 +900,9 @@ export const updateCertificateStatus = async (req, res) => {
 
     // ✅ Fetch the final updated feedback to ensure we have the latest data
     const finalFeedback = await Feedback.findById(feedbackId);
-    
-    res.status(200).json({ 
-      success: true, 
+
+    res.status(200).json({
+      success: true,
       feedback: {
         _id: finalFeedback._id,
         certificateStatus: finalFeedback.certificateStatus,
@@ -904,7 +913,7 @@ export const updateCertificateStatus = async (req, res) => {
         rejectionReason: finalFeedback.rejectionReason
       }
     });
-    
+
   } catch (error) {
     console.error("❌ Error updating certificate status:", error);
     res.status(500).json({ message: "Server error: " + error.message });

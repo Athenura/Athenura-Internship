@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import Graphura from "../../../public/GraphuraLogo.jpg";
+import Athenura from "../../../public/AthenuraLogo.jpg";
 
 const InternDetail = ({ role }) => {
   const { id } = useParams();
@@ -458,8 +458,8 @@ const InternDetail = ({ role }) => {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-4">
               <img
-                src={Graphura}
-                alt="Graphura Logo"
+                src={Athenura}
+                alt="Athenura Logo"
                 className="h-12 sm:h-16 rounded-lg"
               />
               <div>

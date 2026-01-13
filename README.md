@@ -151,7 +151,7 @@ IMS automates **attendance tracking, leave approvals, performance feedback, docu
   - Certificate issuance
   - Internship extension
   - Verification updates
-- Uses **professional Graphura-style HTML email templates**
+- Uses **professional Athenura-style HTML email templates**
 - Secure & reliable email delivery
 
 ---

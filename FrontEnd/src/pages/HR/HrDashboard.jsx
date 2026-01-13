@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Graphura from "../../../public/GraphuraLogo.jpg";
+import Athenura from "../../../public/AthenuraLogo.jpg";
 import { Eye, FileText, Download, Upload, X } from "lucide-react";
 import * as XLSX from "xlsx";
 
@@ -575,7 +575,7 @@ const HRDashboard = () => {
         </head>
         <body>
           <div class="print-header">
-            <h1>Graphura - HR Dashboard Report</h1>
+            <h1>Athenura - HR Dashboard Report</h1>
             <p>Intern Applications and Performance Report</p>
             <p>Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
           </div>
@@ -672,7 +672,7 @@ const HRDashboard = () => {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
-                <img src={Graphura} alt="Graphura Logo" className="sm:h-12 h-8 mr-5" />
+                <img src={Athenura} alt="Athenura Logo" className="sm:h-12 h-8 mr-5" />
                 <div>
                   <h1 className="sm:text-2xl ml-2 text-s font-bold text-gray-800">HR Dashboard</h1>
                   <p className="text-blue-400 font-bold sm:text-lg text-sm">👋 Hi  {storedUser?.fullName}</p>
