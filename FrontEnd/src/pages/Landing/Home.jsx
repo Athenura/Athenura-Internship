@@ -491,10 +491,7 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-3 mb-6 md:mb-0">
-              <img src={Athenura} alt="Athenura Logo" className="h-10" />
-              <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                Athenura
-              </span>
+              <img src={Athenura} alt="Athenura Logo" className="h-12" />
             </div>
             
             <div className="flex flex-wrap justify-center gap-4">
