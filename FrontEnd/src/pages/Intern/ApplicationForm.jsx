@@ -159,8 +159,8 @@ const ApplicationForm = () => {
 
         <p className="mt-4 text-sm" style={{ color: theme.textGray }}>
           Please check back later or contact us at{" "}
-          <a href="mailto:hr@athenura.in" className="underline hover:text-teal-600" style={{ color: theme.primary }}>
-            hr@athenura.in
+          <a href="mailto:hr.athenura@gmail.com" className="underline hover:text-teal-600" style={{ color: theme.primary }}>
+            hr.athenura@gmail.com
           </a>
         </p>
       </div>
