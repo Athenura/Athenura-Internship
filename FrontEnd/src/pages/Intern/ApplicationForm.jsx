@@ -196,7 +196,7 @@ const ApplicationForm = () => {
             </h1>
             <p className="sm:text-sm text-xs leading-relaxed max-w-2xl mx-auto" style={{ color: theme.textGray }}>
               Fill out all required fields to submit your application. <br/>
-              For help: <a href="mailto:hr@athenura.in" className="hover:underline transition-colors" style={{ color: theme.primary }}>hr@athenura.in</a>
+              For help: <a href="mailto:hr.athenura@gmail.com" className="hover:underline transition-colors" style={{ color: theme.primary }}>hr.athenura@gmail.com</a>
             </p>
           </div>
 
