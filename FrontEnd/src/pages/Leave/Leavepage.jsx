@@ -21,16 +21,15 @@ const LeaveApplicationForm = () => {
 
   // Available leave reasons with icons
   const leaveReasons = [
-    { value: 'Sick Leave', icon: '🏥', description: 'For health-related issues' },
-    { value: 'Personal Leave', icon: '👤', description: 'Personal matters requiring time off' },
-    { value: 'Family Emergency', icon: '👨‍👩‍👧‍👦', description: 'Urgent family matters' },
-    { value: 'Vacation', icon: '🏖️', description: 'Planned time off for relaxation' },
-    { value: 'Medical Appointment', icon: '🩺', description: 'Doctor or medical appointments' },
-    { value: 'Wedding', icon: '💒', description: 'Personal or family wedding' },
-    { value: 'Maternity/Paternity Leave', icon: '👶', description: 'Childbirth or adoption' },
-    { value: 'Bereavement', icon: '😔', description: 'Loss of family member' },
-    { value: 'Religious Observance', icon: '🛐', description: 'Religious holidays or events' },
-    { value: 'Other', icon: '📝', description: 'Other reasons not listed' }
+    { value: 'Sick Leave', description: 'For health-related issues' },
+    { value: 'Family Emergency', description: 'Urgent family matters' },
+    { value: 'Vacation', description: 'Planned time off for relaxation' },
+    { value: 'Medical Appointment', description: 'Doctor or medical appointments' },
+    { value: 'Wedding', description: 'Personal or family wedding' },
+    { value: 'Maternity/Paternity Leave', description: 'Childbirth or adoption' },
+    { value: 'Bereavement', description: 'Loss of family member' },
+    { value: 'Religious Observance', description: 'Religious holidays or events' },
+    { value: 'Other', description: 'Other reasons not listed' }
   ];
 
   // Calculate total days between start and end date
@@ -381,7 +380,7 @@ const LeaveApplicationForm = () => {
               <option value="" className="text-gray-400 text-sm sm:text-base">Select your leave type...</option>
               {leaveReasons.map((reason, index) => (
                 <option key={index} value={reason.value} className="text-sm sm:text-base">
-                  {reason.icon} {reason.value}
+                   {reason.value}
                 </option>
               ))}
             </select>
@@ -532,7 +531,7 @@ const LeaveApplicationForm = () => {
                 <div className="mt-1 sm:mt-2 text-xs sm:text-sm text-blue-700 space-y-1.5 sm:space-y-2">
                   <p className="flex items-start sm:items-center">
                     <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-sky-400 rounded-full mr-1.5 sm:mr-2 mt-1 sm:mt-0 flex-shrink-0"></span>
-                    Apply for leave at least <strong className="mx-1">48 hours</strong> in advance
+                    Apply for leave at least <strong className="mx-1">24 hours</strong> in advance
                   </p>
                   <p className="flex items-start sm:items-center">
                     <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-rose-400 rounded-full mr-1.5 sm:mr-2 mt-1 sm:mt-0 flex-shrink-0"></span>

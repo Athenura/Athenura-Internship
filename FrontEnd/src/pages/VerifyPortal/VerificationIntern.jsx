@@ -842,8 +842,8 @@ This document is an official performance record issued by Athenura for professio
                   </span>
                   <span>
                     Contact HR at{" "}
-                    <a href="mailto:hr@athenura.in" className="text-blue-700 hover:text-blue-900 underline font-semibold whitespace-nowrap">
-                      hr@athenura.in
+                    <a href="mailto:hr.athenura@gmail.com" className="text-blue-700 hover:text-blue-900 underline font-semibold whitespace-nowrap">
+                      hr.athenura@gmail.com
                     </a>
                   </span>
                 </p>
