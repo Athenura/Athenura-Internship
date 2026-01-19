@@ -340,7 +340,7 @@ const LeaveApplicationForm = () => {
           {/* Intern ID */}
           <div className="group">
             <label htmlFor="internId" className="block text-sm sm:text-base font-semibold text-blue-700 mb-2 transition-colors group-focus-within:text-blue-600">
-              <span className="hidden sm:inline">👤</span> Intern ID <span className="text-rose-500">*</span>
+               Intern ID <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
@@ -365,7 +365,7 @@ const LeaveApplicationForm = () => {
           {/* Leave Type */}
           <div className="group">
             <label htmlFor="leaveType" className="block text-sm sm:text-base font-semibold text-blue-700 mb-2 transition-colors group-focus-within:text-blue-600">
-              <span className="hidden sm:inline">📋</span> Leave Type <span className="text-rose-500">*</span>
+               Leave Type <span className="text-rose-500">*</span>
             </label>
             <select
               id="leaveType"
@@ -467,7 +467,7 @@ const LeaveApplicationForm = () => {
           {/* Reason */}
           <div className="group">
             <label htmlFor="reason" className="block text-sm sm:text-base font-semibold text-blue-700 mb-2 transition-colors group-focus-within:text-blue-600">
-              <span className="hidden sm:inline">💬</span> Reason for Leave <span className="text-rose-500">*</span>
+               Reason for Leave <span className="text-rose-500">*</span>
               <span className="text-xs text-gray-500 font-normal ml-1 sm:ml-2 block sm:inline">(Minimum 10 characters)</span>
             </label>
             <textarea
