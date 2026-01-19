@@ -401,7 +401,7 @@ const LeaveApplicationForm = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="group">
               <label htmlFor="startDate" className="block text-sm sm:text-base font-semibold text-blue-700 mb-2 transition-colors group-focus-within:text-blue-600">
-                <span className="hidden sm:inline">📅</span> Start Date <span className="text-rose-500">*</span>
+                 Start Date <span className="text-rose-500">*</span>
               </label>
               <input
                 type="date"
@@ -424,7 +424,7 @@ const LeaveApplicationForm = () => {
 
             <div className="group">
               <label htmlFor="endDate" className="block text-sm sm:text-base font-semibold text-blue-700 mb-2 transition-colors group-focus-within:text-blue-600">
-                <span className="hidden sm:inline">📅</span> End Date <span className="text-rose-500">*</span>
+                 End Date <span className="text-rose-500">*</span>
               </label>
               <input
                 type="date"
@@ -450,7 +450,7 @@ const LeaveApplicationForm = () => {
           <div className="bg-gradient-to-r from-blue-100 to-sky-100 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-blue-200">
             <div className="flex items-center justify-between">
               <span className="text-blue-700 font-semibold text-sm sm:text-base">
-                <span className="hidden sm:inline">📊</span> Total Leave Days
+                 Total Leave Days
               </span>
               <span className={`text-xl sm:text-2xl font-bold ${formData.totalDays > 0 ? 'text-sky-600' : 'text-gray-400'}`}>
                 {formData.totalDays || 0} <span className="text-sm sm:text-base">{formData.totalDays === 1 ? 'day' : 'days'}</span>
@@ -527,7 +527,7 @@ const LeaveApplicationForm = () => {
           <div className="bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 rounded-xl sm:rounded-2xl p-2 sm:p-6 mt-4 sm:mt-6">
             <div className="flex items-start">
               <div className="ml-3 sm:ml-4 flex-1">
-                <h3 className="text-base sm:text-lg font-semibold text-blue-800">📋 Leave Policy Guidelines</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-blue-800"> Leave Policy Guidelines</h3>
                 <div className="mt-1 sm:mt-2 text-xs sm:text-sm text-blue-700 space-y-1.5 sm:space-y-2">
                   <p className="flex items-start sm:items-center">
                     <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-sky-400 rounded-full mr-1.5 sm:mr-2 mt-1 sm:mt-0 flex-shrink-0"></span>
