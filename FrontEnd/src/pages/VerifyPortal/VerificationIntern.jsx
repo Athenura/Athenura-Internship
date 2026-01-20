@@ -388,13 +388,13 @@ const InternVerificationPortal = () => {
         }
 
         .perf-table td {
-          padding: 12px;
+          padding: 4px;
           border-bottom: 1px solid var(--border-color);
         }
 
         /* Signatures Area */
         .signature-wrapper {
-          margin-top: 50px;
+          margin-top: 30px;
           display: flex;
           justify-content: flex-end;
           page-break-inside: avoid;
@@ -521,11 +521,7 @@ const InternVerificationPortal = () => {
   </div>
 </div>
 
-
-        <footer style="position: absolute; bottom: 20mm; left: 20mm; right: 20mm; font-size: 10px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 10px;">
-This document is an official performance record issued by Athenura for professional reference and verification. Digital authentication is available at athenura.in.
-        </footer>
-      </div>
+</div>
 
       <script>
         window.onload = () => {

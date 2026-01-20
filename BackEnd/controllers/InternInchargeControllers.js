@@ -791,21 +791,21 @@ export const ExtendedDays = async (req, res) => {
       });
     }
 
-    // Calculate new total extended days
+    // Calculate current end date (before extension)
+    const currentEndDate = calculateCurrentEndDate(intern);
+    
+    // Calculate new end date after extension
+    const newEndDate = new Date(currentEndDate);
+    newEndDate.setDate(newEndDate.getDate() + parseInt(extendedDays));
+
+    // Check if extension crosses into a new month
+    const crossesNewMonth = checkIfCrossesMonth(currentEndDate, newEndDate);
+    
+    // Calculate extended months (only if crossing into new month)
+    const extendedMonths = crossesNewMonth ? calculateMonthsBetween(currentEndDate, newEndDate) : 0;
+    
+    // Calculate total extended days
     const totalExtendedDays = (intern.extendedDays || 0) + parseInt(extendedDays);
-
-    // Calculate end date from original joining date
-    const joinDate = new Date(intern.joiningDate);
-    const endDate = new Date(joinDate);
-
-    // Calculate base duration from joining date
-    if (intern.duration === "8 Months") endDate.setMonth(joinDate.getMonth() + 8);
-    else if (intern.duration === "3 Months") endDate.setMonth(joinDate.getMonth() + 3);
-    else if (intern.duration === "4 Months") endDate.setMonth(joinDate.getMonth() + 4);
-    else if (intern.duration === "6 Months") endDate.setMonth(joinDate.getMonth() + 6);
-
-    // Add total extended days
-    endDate.setDate(endDate.getDate() + totalExtendedDays);
 
     const now = new Date();
 
@@ -813,15 +813,20 @@ export const ExtendedDays = async (req, res) => {
     intern.extendedDays = totalExtendedDays;
 
     // If intern was completed but the new extended end date is in future, reactivate
-    if (intern.status === "Completed" && now < endDate) {
+    if (intern.status === "Completed" && now < newEndDate) {
       intern.status = "Active";
     }
     // If intern is active but the new extended end date is in past, complete them
-    else if (intern.status === "Active" && now >= endDate) {
+    else if (intern.status === "Active" && now >= newEndDate) {
       intern.status = "Completed";
     }
 
     await intern.save();
+
+    // Update performance record if extension crosses into new month
+    if (crossesNewMonth && extendedMonths > 0) {
+      await addExtendedMonthsToPerformance(internId, extendedMonths);
+    }
 
     // Send email notification to intern
     const emailSubject = ` Internship Extended - ${intern.fullName}`;
@@ -850,10 +855,12 @@ export const ExtendedDays = async (req, res) => {
                   <p>We're pleased to inform you that your internship at Athenura has been extended.</p>
 
                   <div class="highlight">
-                      <h3>📅 Extension Details:</h3>
+                      <h3>Extension Details:</h3>
                       <p><strong>Additional Days:</strong> ${extendedDays} days</p>
+                      <p><strong>Extended Months:</strong> ${extendedMonths > 0 ? `${extendedMonths} month${extendedMonths > 1 ? 's' : ''}` : 'No additional months'}</p>
                       <p><strong>Total Extended Days:</strong> ${totalExtendedDays} days</p>
-                      <p><strong>New End Date:</strong> ${endDate.toDateString()}</p>
+                      <p><strong>Previous End Date:</strong> ${currentEndDate.toDateString()}</p>
+                      <p><strong>New End Date:</strong> ${newEndDate.toDateString()}</p>
                       <p><strong>Current Status:</strong> ${intern.status}</p>
                   </div>
 
@@ -876,9 +883,13 @@ export const ExtendedDays = async (req, res) => {
       // Don't throw error - email failure shouldn't prevent extension
     });
 
+    const extensionMessage = extendedMonths > 0 
+      ? `by ${extendedDays} days (adding ${extendedMonths} month${extendedMonths > 1 ? 's' : ''} to performance tracking)`
+      : `by ${extendedDays} days (within same month)`;
+
     const message = intern.status === "Active"
-      ? `Internship extended by ${extendedDays} days. New end date: ${endDate.toDateString()}`
-      : `Internship extended by ${extendedDays} days. Intern remains completed as end date (${endDate.toDateString()}) has passed`;
+      ? `Internship extended ${extensionMessage}. New end date: ${newEndDate.toDateString()}`
+      : `Internship extended ${extensionMessage}. Intern remains completed as end date (${newEndDate.toDateString()}) has passed`;
 
     res.json({
       success: true,
@@ -887,8 +898,11 @@ export const ExtendedDays = async (req, res) => {
         _id: intern._id,
         fullName: intern.fullName,
         extendedDays: intern.extendedDays,
-        status: intern.status,
-        calculatedEndDate: endDate.toISOString().split('T')[0]
+        extendedMonths: extendedMonths,
+        crossesNewMonth: crossesNewMonth,
+        previousEndDate: currentEndDate.toISOString().split('T')[0],
+        newEndDate: newEndDate.toISOString().split('T')[0],
+        status: intern.status
       }
     });
 
@@ -901,51 +915,66 @@ export const ExtendedDays = async (req, res) => {
   }
 }
 
+// Helper function to calculate current end date
+const calculateCurrentEndDate = (intern) => {
+  const joinDate = new Date(intern.joiningDate);
+  const endDate = new Date(joinDate);
 
+  // Calculate base duration from joining date
+  if (intern.duration === "8 Months") endDate.setMonth(joinDate.getMonth() + 8);
+  else if (intern.duration === "3 Months") endDate.setMonth(joinDate.getMonth() + 3);
+  else if (intern.duration === "4 Months") endDate.setMonth(joinDate.getMonth() + 4);
+  else if (intern.duration === "6 Months") endDate.setMonth(joinDate.getMonth() + 6);
 
-const calculateDurationInMonths = (duration) => {
-  if (!duration) return 3; // Default to 3 months
+  // Add existing extended days if any
+  if (intern.extendedDays) {
+    endDate.setDate(endDate.getDate() + intern.extendedDays);
+  }
 
-  const match = duration.toString().match(/(\d+)\s*month/i);
-  return match ? parseInt(match[1]) : 3;
+  return endDate;
 };
 
-const calculateOverallPerformance = (monthlyPerformance) => {
-  if (!monthlyPerformance || monthlyPerformance.length === 0);
+// Check if extension crosses into a new month
+const checkIfCrossesMonth = (currentEndDate, newEndDate) => {
+  const currentMonth = currentEndDate.getMonth();
+  const currentYear = currentEndDate.getFullYear();
+  const newMonth = newEndDate.getMonth();
+  const newYear = newEndDate.getFullYear();
 
-  const validMonths = monthlyPerformance.filter(month => month.overallRating > 0);
-  if (validMonths.length === 0) return "Good";
-  const avgRating = validMonths.reduce((sum, month) => sum + month.overallRating, 0) / validMonths.length;
-
-  if (avgRating >= 8.5) return "Excellent";
-  if (avgRating >= 7) return "Good";
-  return "Good"
+  // Return true if month OR year changes
+  return (currentMonth !== newMonth) || (currentYear !== newYear);
 };
 
+// Calculate number of months between two dates
+const calculateMonthsBetween = (date1, date2) => {
+  let months = (date2.getFullYear() - date1.getFullYear()) * 12;
+  months += date2.getMonth() - date1.getMonth();
+  
+  // If day of month is also important, add partial month
+  if (date2.getDate() > date1.getDate()) {
+    months += 0.5; // Consider as partial month
+  }
+  
+  return Math.ceil(months); // Always round up to nearest month
+};
 
-
-export const getInternPerformance = async (req, res) => {
+// Helper function to add extended months to performance record
+const addExtendedMonthsToPerformance = async (internId, extendedMonths) => {
   try {
-    const { internId } = req.params;
-
-    let performance = await Performance.findOne({ intern: internId })
-      .populate('intern', 'fullName domain duration');
+    // Find existing performance record
+    let performance = await Performance.findOne({ intern: internId });
 
     if (!performance) {
-      // If no performance record exists, create one with initial structure
+      // If no performance record exists, create one with extended months
       const intern = await Intern.findById(internId);
-      if (!intern) {
-        return res.status(404).json({
-          success: false,
-          message: 'Intern not found'
-        });
-      }
-
-      // Calculate duration in months
-      const durationMonths = calculateDurationInMonths(intern.duration);
+      
+      // Calculate original duration in months
+      const originalDurationMonths = calculateDurationInMonths(intern.duration);
+      const totalMonths = originalDurationMonths + extendedMonths;
+      
       const monthlyPerformance = [];
 
-      for (let i = 1; i <= durationMonths; i++) {
+      for (let i = 1; i <= totalMonths; i++) {
         monthlyPerformance.push({
           monthLabel: `Month ${i}`,
           totalTasks: 0,
@@ -957,7 +986,87 @@ export const getInternPerformance = async (req, res) => {
           },
           overallRating: 0,
           completionPercentage: 0,
-          inchargeRemarks: ""
+          inchargeRemarks: "",
+          isExtendedMonth: i > originalDurationMonths
+        });
+      }
+
+      performance = new Performance({
+        intern: internId,
+        monthlyPerformance
+      });
+    } else {
+      // If performance record exists, add new months
+      const currentMonths = performance.monthlyPerformance.length;
+      const startMonth = currentMonths + 1;
+      
+      for (let i = startMonth; i <= currentMonths + extendedMonths; i++) {
+        performance.monthlyPerformance.push({
+          monthLabel: `Month ${i}`,
+          totalTasks: 0,
+          tasksCompleted: 0,
+          ratings: {
+            initiative: 0,
+            communication: 0,
+            behaviour: 0
+          },
+          overallRating: 0,
+          completionPercentage: 0,
+          inchargeRemarks: "",
+          isExtendedMonth: true
+        });
+      }
+    }
+
+    await performance.save();
+    console.log(`Added ${extendedMonths} month(s) to performance record for intern ${internId}`);
+    
+  } catch (error) {
+    console.error("Error updating performance record with extended months:", error);
+  }
+};
+
+
+export const getInternPerformance = async (req, res) => {
+  try {
+    const { internId } = req.params;
+
+    let performance = await Performance.findOne({ intern: internId })
+      .populate('intern', 'fullName domain duration extendedDays status');
+
+    if (!performance) {
+      // If no performance record exists, create one with correct months
+      const intern = await Intern.findById(internId);
+      if (!intern) {
+        return res.status(404).json({
+          success: false,
+          message: 'Intern not found'
+        });
+      }
+
+      // Calculate current end date to determine if extension crossed months
+      const currentEndDate = calculateCurrentEndDate(intern);
+      const joinDate = new Date(intern.joiningDate);
+      
+      // Calculate months based on time difference between joining and current end date
+      const monthsDiff = calculateMonthsBetweenDates(joinDate, currentEndDate);
+      
+      const monthlyPerformance = [];
+
+      for (let i = 1; i <= monthsDiff; i++) {
+        monthlyPerformance.push({
+          monthLabel: `Month ${i}`,
+          totalTasks: 0,
+          tasksCompleted: 0,
+          ratings: {
+            initiative: 0,
+            communication: 0,
+            behaviour: 0
+          },
+          overallRating: 0,
+          completionPercentage: 0,
+          inchargeRemarks: "",
+          isExtendedMonth: i > calculateDurationInMonths(intern.duration)
         });
       }
 
@@ -967,7 +1076,7 @@ export const getInternPerformance = async (req, res) => {
       });
 
       await performance.save();
-      await performance.populate('intern', 'fullName domain duration status');
+      await performance.populate('intern', 'fullName domain duration extendedDays status');
     }
 
     res.json({
@@ -982,6 +1091,34 @@ export const getInternPerformance = async (req, res) => {
       message: 'Server error while fetching performance data'
     });
   }
+};
+
+// Helper function to calculate months between two dates
+const calculateMonthsBetweenDates = (date1, date2) => {
+  const months = (date2.getFullYear() - date1.getFullYear()) * 12;
+  return months + date2.getMonth() - date1.getMonth() + 1; // +1 to include current month
+};
+
+const calculateDurationInMonths = (duration) => {
+  if (!duration) return 3; // Default to 3 months
+
+  const match = duration.toString().match(/(\d+)\s*month/i);
+  return match ? parseInt(match[1]) : 3;
+};
+
+const calculateOverallPerformance = (monthlyPerformance) => {
+  if (!monthlyPerformance || monthlyPerformance.length === 0) {
+    return "Good";
+  }
+
+  const validMonths = monthlyPerformance.filter(month => month.overallRating > 0);
+  if (validMonths.length === 0) return "Good";
+  
+  const avgRating = validMonths.reduce((sum, month) => sum + month.overallRating, 0) / validMonths.length;
+
+  if (avgRating >= 8.5) return "Excellent";
+  if (avgRating >= 7) return "Good";
+  return "Good";
 };
 
 // Update performance data for an intern
