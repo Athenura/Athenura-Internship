@@ -39,7 +39,7 @@ export const createIntern = async (req, res) => {
       resumeUrl: internData.resumeUrl,
       duration: internData.duration,
       prevInternship: internData.prevInternship,
-      prevInternshipDesc:internData.prevInternshipDesc,
+      prevInternshipDesc: internData.prevInternshipDesc,
       TpoEmail: internData.TpoEmail,
       TpoNumber: internData.TpoNumber,
       TpoName: internData.TpoName,
@@ -55,15 +55,21 @@ Thank you for your interest in joining Athenura and submitting your application 
 📌 Internship Domain: ${newIntern.domain}
 📌 Duration: ${newIntern.duration}
 
-We have successfully received your application and our recruitment team will carefully review your qualifications. We appreciate the time and effort you've invested in your application.
+We have successfully received your application, and our recruitment team will carefully review your qualifications. We truly appreciate the time and effort you invested in your application.
 
-You can expect to hear back from us within the next 2-3 business days regarding the status of your application.
+🟢 Important Next Step:
+To stay updated with important announcements, onboarding details, and internship-related communication, please join our official WhatsApp group using the link below:
 
-Should you have any questions in the meantime, please don't hesitate to reach out.
+👉 Join WhatsApp Group: https://chat.whatsapp.com/HEdlvCTbARzBrx5pWEIuqz
 
-Best regards,
-The Athenura Team
+You can expect to hear back from us within the next 2–3 business days regarding the status of your application.
+
+If you have any questions in the meantime, feel free to reach out to us.
+
+Best regards,  
+The Athenura Team  
 🌐 www.athenura.in`;
+
 
     await sendEmail(newIntern.email, "Athenura - Internship Application Received", `<pre style="font-family:inherit;">${emailMsg}</pre>`);
 
@@ -161,7 +167,7 @@ export const verifyIntern = async (req, res) => {
       joiningDate: intern.joiningDate,
       uniqueId: intern.uniqueId,
       college: intern.college,
-      status:intern.status,
+      status: intern.status,
       course: intern.course,
       educationLevel: intern.educationLevel,
       domain: intern.domain,
