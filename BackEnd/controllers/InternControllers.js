@@ -60,7 +60,7 @@ We have successfully received your application, and our recruitment team will ca
 🟢 Important Next Step:
 To stay updated with important announcements, onboarding details, and internship-related communication, please join our official WhatsApp group using the link below:
 
-👉 Join WhatsApp Group: https://chat.whatsapp.com/HEdlvCTbARzBrx5pWEIuqz
+👉 Join WhatsApp Group: https://chat.whatsapp.com/De9WJRx7Mp8H3Wz5OOGydA
 
 You can expect to hear back from us within the next 2–3 business days regarding the status of your application.
 
