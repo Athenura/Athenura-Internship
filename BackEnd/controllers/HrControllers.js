@@ -7,11 +7,11 @@ export const getAllInterns = async (req, res) => {
       search = "",
       status,
       performance,
-   
+      domain, // Add domain parameter
     } = req.query;
 
     // ✅ Allowed status values
-    const allowedStatuses = ["Applied", "Selected"];
+    const allowedStatuses = ["Applied", "Selected", "Rejected"]; // Added Rejected
 
     // 🧩 Build query efficiently
     const searchQuery = {
@@ -33,6 +33,7 @@ export const getAllInterns = async (req, res) => {
         { educationLevel: regex },
         { uniqueId: regex },
         { mobile: regex },
+        {TpoName: regex}
       ];
     }
 
@@ -41,9 +42,14 @@ export const getAllInterns = async (req, res) => {
       searchQuery.performance = performance;
     }
 
+    // 🎯 Add domain filter if provided
+    if (domain) {
+      searchQuery.domain = domain;
+    }
+
     // ⚡ Fetch data efficiently
     const interns = await Intern.find(searchQuery)
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: -1 });
       
     // ✅ Count total documents (faster than interns.length for large results)
     const total = await Intern.countDocuments(searchQuery);

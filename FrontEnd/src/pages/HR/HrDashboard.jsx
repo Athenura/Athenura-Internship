@@ -18,7 +18,7 @@ const HRDashboard = () => {
   const [showEmailCopy, setShowEmailCopy] = useState(false);
   const [copySuccess, setCopySuccess] = useState("");
   const [exportLoading, setExportLoading] = useState(false);
-
+  const [selectedDomain, setSelectedDomain] = useState("");
   // Import functionality states
   const [importLoading, setImportLoading] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -38,7 +38,7 @@ const HRDashboard = () => {
     setLoading(true);
     try {
       const { data } = await axios.get("/api/hr/interns", {
-        params: { search, status, performance },
+        params: { search, status, performance, domain: selectedDomain },
         withCredentials: true,
       });
       setInterns(data.interns || []);
@@ -48,6 +48,12 @@ const HRDashboard = () => {
     }
     setLoading(false);
   };
+
+
+  useEffect(() => {
+    const timer = setTimeout(() => fetchInterns(), 500);
+    return () => clearTimeout(timer);
+  }, [search, status, performance, selectedDomain]); // Add selectedDomain here
 
   // Import Functions
   const handleFileSelect = async (event) => {
@@ -833,7 +839,7 @@ const HRDashboard = () => {
             )}
 
             <h2 className="text-xl mt-4 font-semibold text-gray-800 mb-4">Filters & Search</h2>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
               <div className="md:col-span-2">
                 <input
                   type="text"
@@ -867,6 +873,29 @@ const HRDashboard = () => {
                 <option value="Poor">Poor</option> {/* Add this line */}
               </select>
 
+
+              <select
+                value={selectedDomain}
+                onChange={(e) => setSelectedDomain(e.target.value)}
+                className="border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+              >
+                <option value="">All Domains</option>
+                <option value="Data Science & Analytics">Data Science & Analytics</option>
+                <option value="Human Resources">Human Resources</option>
+                <option value="Social Media Management">Social Media Management</option>
+                <option value="Graphic Design">Graphic Design</option>
+                <option value="Digital Marketing">Digital Marketing</option>
+                <option value="Video Editing">Video Editing</option>
+                <option value="Full Stack Development">Full Stack Development</option>
+                <option value="MERN Stack Development">MERN Stack Development</option>
+                <option value="Content Writing">Content Writing</option>
+                <option value="Content Creator">Content Creator</option>
+                <option value="UI/UX Designing">UI/UX Designing</option>
+                <option value="Front-end Developer">Front-end Developer</option>
+                <option value="Back-end Developer">Back-end Developer</option>
+
+              </select>
+
               <button
                 onClick={() => setShowSelectedOnly(!showSelectedOnly)}
                 className={`border rounded-xl px-4 py-3 font-medium transition-all duration-200 ${showSelectedOnly
@@ -876,7 +905,20 @@ const HRDashboard = () => {
               >
                 {showSelectedOnly ? '✅ Showing Selected' : '👥 Show All'}
               </button>
+              <button
+                onClick={() => {
+                  setSearch("");
+                  setStatus("");
+                  setPerformance("");
+                  setSelectedDomain("");
+                }}
+                className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium border border-gray-300"
+              >
+                Clear Filters
+              </button>
             </div>
+
+
 
             {/* Selected Only Notice */}
             {showSelectedOnly && (
@@ -923,6 +965,7 @@ const HRDashboard = () => {
                     <th className="p-4 text-left font-semibold">College Info</th>
                     <th className="p-4 text-left font-semibold">Status</th>
                     <th className="p-4 text-left font-semibold">Performance</th>
+                    <th className="p-4 text-left font-semibold">TPO Name</th>
                     <th className="p-4 text-left font-semibold">Domain</th>
                     <th className="p-4 text-left font-semibold no-print">Actions</th>
                   </tr>
@@ -1022,7 +1065,9 @@ const HRDashboard = () => {
                           )}
                         </td>
 
-                        {/* Performance with Update */}
+
+
+
                         {/* Performance with Update */}
                         <td className="p-4">
                           <div className="print-only">
@@ -1049,6 +1094,9 @@ const HRDashboard = () => {
                           )}
                         </td>
 
+                        <td>
+                          {intern.TpoName}
+                        </td>
                         {/* Domain Update */}
                         <td className="p-3">
                           <div className="print-only">
