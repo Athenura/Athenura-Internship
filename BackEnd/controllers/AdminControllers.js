@@ -291,7 +291,7 @@ export const generateOfferLetterWithPNG = async (req, res) => {
     page.drawText(`${intern.fullName}`, {
       x: 60,
       y,
-      size: 13,
+      size: 14,
       font: fontBold,
       color: rgb(0, 0, 0),
     });
@@ -299,7 +299,7 @@ export const generateOfferLetterWithPNG = async (req, res) => {
     page.drawText(`${intern.domain} Department`, {
       x: 60,
       y,
-      size: 13,
+      size: 14,
       font,
       color: rgb(0, 0, 0),
     });
@@ -307,14 +307,14 @@ export const generateOfferLetterWithPNG = async (req, res) => {
     y -= 40;
     page.drawText(
       "Subject : Offer Letter for Internship – Athenura",
-      { x: 60, y, size: 13, font, color: rgb(0, 0, 0) }
+      { x: 60, y, size: 14, font, color: rgb(0, 0, 0) }
     );
 
     y -= 35;
     page.drawText(`Dear ${intern.fullName},`, {
       x: 60,
       y,
-      size: 13,
+      size: 14,
       font,
       color: rgb(0, 0, 0),
     });
@@ -338,23 +338,23 @@ export const generateOfferLetterWithPNG = async (req, res) => {
 
 
     textLines.forEach((line) => {
-      page.drawText(line, { x: 60, y, size: 13, font, color: rgb(0, 0, 0) });
+      page.drawText(line, { x: 60, y, size: 14, font, color: rgb(0, 0, 0) });
       y -= 15;
     });
 
     y -= 25;
-    page.drawText("Thank you", { x: 60, y, size: 13, font: fontBold });
+    page.drawText("Thank you", { x: 60, y, size: 14, font: fontBold });
     y -= 15;
-    page.drawText("Team Athenura.", { x: 60, y, size: 13, font: fontBold });
+    page.drawText("Team Athenura.", { x: 60, y, size: 14, font: fontBold });
 
     y -= 75;
-    page.drawText("Unique ID:", { x: 60, y, size: 13, font: fontBold });
+    page.drawText("Unique ID:", { x: 60, y, size: 14, font: fontBold });
     y -= 15;
-    page.drawText(intern.uniqueId, { x: 60, y, size: 13, font: fontBold });
+    page.drawText(intern.uniqueId, { x: 60, y, size: 14, font: fontBold });
 
     y -= 15;
-    page.drawText("Date:", { x: 60, y, size: 13, font: fontBold });
-    page.drawText(formattedJoiningDate, { x: 100, y, size: 13, font });
+    page.drawText("Date:", { x: 60, y, size: 14, font: fontBold });
+    page.drawText(formattedJoiningDate, { x: 100, y, size: 14, font });
 
     // 5️⃣ Generate PDF bytes
     const pdfBytes = await pdfDoc.save();
