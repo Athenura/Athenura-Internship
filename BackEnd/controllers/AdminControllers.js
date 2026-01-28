@@ -598,8 +598,8 @@ export const generateBulkOfferLetters = async (req, res) => {
           "to our growth and vision.",
           "",
           `You will begin your association with Athenura on ${formattedJoiningDate},`,
-          "working in a Remote position. This role offers hands-on experience,",
-          "professional exposure, and opportunities to strengthen your technical and",
+          `working in a Remote position for a duration of ${intern.duration}. This role offers hands-on `,
+          "experience, professional exposure, and opportunities to strengthen your technical and",
           "collaborative skills.",
           "",
           "At Athenura, we focus on innovation, continuous learning, and real-world",
@@ -618,13 +618,13 @@ export const generateBulkOfferLetters = async (req, res) => {
         page.drawText("Team Athenura.", { x: 60, y, size: 14, font: fontBold });
 
         y -= 75;
-        page.drawText("Unique ID:", { x: 75, y, size: 14, font: fontBold });
+        page.drawText("Unique ID:", { x: 60, y, size: 14, font: fontBold });
         y -= 15;
-        page.drawText(intern.uniqueId, { x: 75, y, size: 14, font: fontBold });
+        page.drawText(intern.uniqueId, { x: 60, y, size: 14, font: fontBold });
 
         y -= 15;
         page.drawText("Date:", { x: 75, y, size: 14, font: fontBold });
-        page.drawText(formattedJoiningDate, { x: 115, y, size: 14, font });
+        page.drawText(formattedJoiningDate, { x: 100, y, size: 14, font });
 
         // 5️⃣ Generate PDF bytes
         const pdfBytes = await pdfDoc.save();
