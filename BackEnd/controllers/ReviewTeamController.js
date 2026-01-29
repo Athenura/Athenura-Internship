@@ -419,136 +419,142 @@ export class CertificateGenerator {
   }
 
   // 🎓 Generate certificate using stored PNG template
-  static async generateCertificate(internData) {
-    try {
-      if (!internData.certificateNumber) {
-        throw new Error("Certificate number is required but was not provided");
-      }
-
-      // ✅ Template path
-      const templatePath = path.join(process.cwd(), "public", "templates", "certificate-template.png");
-      if (!fs.existsSync(templatePath)) {
-        throw new Error(`Certificate template not found at: ${templatePath}`);
-      }
-      const templateImage = fs.readFileSync(templatePath);
-
-      // ✅ Load font
-      const fontPath = path.join(process.cwd(), "public", "fonts", "Rancho-Regular.ttf");
-      if (!fs.existsSync(fontPath)) {
-        throw new Error(`Font not found at: ${fontPath}`);
-      }
-      const pacificoFontBytes = fs.readFileSync(fontPath);
-
-      // ✅ Create PDF and register fontkit
-      const pdfDoc = await PDFDocument.create();
-      pdfDoc.registerFontkit(fontkit);
-
-      // ✅ Add page (A4 Landscape)
-      const page = pdfDoc.addPage([842, 595]);
-
-      // ✅ Embed background image
-      const image = await pdfDoc.embedPng(templateImage);
-      page.drawImage(image, {
-        x: 0,
-        y: 0,
-        width: 842,
-        height: 595,
-      });
-
-      // ✅ Embed fonts
-      const pacificoFont = await pdfDoc.embedFont(pacificoFontBytes);
-      const defaultFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-
-      // 1️⃣ Intern Name — Pacifico
-      const name = internData.fullName || "";
-      const nameWidth = this.getTextWidth(name, pacificoFont, 58);
-      page.drawText(name, {
-        x: 490 - nameWidth / 2,
-        y: 283,
-        size: 65,
-        font: pacificoFont,
-        color: rgb(0, 0, 0),
-      });
-
-      // 2️⃣ Completion Text — Default font
-      const line1 = `Has completed the internship program from ${internData.startMonth} to ${internData.endMonth}`;
-      const line2 = ` showing exceptional dedication, professionalism, and contributions`;
-      const line3 = `in the ${internData.domain} Department at Athenura.  `;
-
-
-      const lines = [line1, line2, line3];
-
-      const fontSize = 14.5;
-      const lineHeight = 22;
-
-      // Center block vertically
-      const totalTextHeight = lines.length * lineHeight;
-      const startY = 230 + totalTextHeight / 2 - lineHeight;
-
-      lines.forEach((line, index) => {
-        const lineWidth = this.getTextWidth(line, defaultFont, fontSize);
-
-        page.drawText(line, {
-          x: 485 - lineWidth / 2,
-          y: startY - index * lineHeight,
-          size: fontSize,
-          font: defaultFont,
-          color: rgb(0, 0, 0),
-        });
-      });
-
-
-      // 3️⃣ Certificate ID — Bold
-      page.drawText(`Certificate ID: ${internData.certificateNumber}`, {
-        x: 150,
-        y: 27,
-        size: 10,
-        font: boldFont,
-        color: rgb(0, 0, 0),
-      });
-
-      // 4️⃣ Unique ID — Bold
-      page.drawText(`Unique ID: ${internData.uniqueId}`, {
-        x: 530,
-        y: 27,
-        size: 10,
-        font: boldFont,
-        color: rgb(0, 0, 0),
-      });
-
-      const pdfBytes = await pdfDoc.save();
-      return Buffer.from(pdfBytes);
-    } catch (error) {
-      console.error("❌ Certificate generation error:", error);
-      throw new Error(`Failed to generate certificate: ${error.message}`);
+static async generateCertificate(internData) {
+  try {
+    if (!internData.certificateNumber) {
+      throw new Error("Certificate number is required but was not provided");
     }
+
+    // 📄 Template path
+    const templatePath = path.join(
+      process.cwd(),
+      "public",
+      "templates",
+      "certificate-template.png"
+    );
+    if (!fs.existsSync(templatePath)) {
+      throw new Error(`Certificate template not found at: ${templatePath}`);
+    }
+    const templateImage = fs.readFileSync(templatePath);
+
+    // 🔤 Font path
+    const fontPath = path.join(
+      process.cwd(),
+      "public",
+      "fonts",
+      "Rancho-Regular.ttf"
+    );
+    if (!fs.existsSync(fontPath)) {
+      throw new Error(`Font not found at: ${fontPath}`);
+    }
+    const pacificoFontBytes = fs.readFileSync(fontPath);
+
+    // 📘 Create PDF
+    const pdfDoc = await PDFDocument.create();
+    pdfDoc.registerFontkit(fontkit);
+
+    // 📐 A4 Landscape
+    const page = pdfDoc.addPage([842, 595]);
+    const pageWidth = page.getWidth();
+
+    // 🖼 Background image
+    const image = await pdfDoc.embedPng(templateImage);
+    page.drawImage(image, {
+      x: 0,
+      y: 0,
+      width: 842,
+      height: 595,
+    });
+
+    // 🔠 Fonts
+    const nameFont = await pdfDoc.embedFont(pacificoFontBytes);
+    const defaultFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    /* ===========================
+       1️⃣ INTERN NAME (PERFECT CENTER)
+       =========================== */
+    const name = internData.fullName || "";
+    let nameFontSize = 58;
+
+    // Auto reduce font size for long names
+    let nameWidth = nameFont.widthOfTextAtSize(name, nameFontSize);
+    const maxWidth = 700;
+
+    while (nameWidth > maxWidth && nameFontSize > 40) {
+      nameFontSize -= 2;
+      nameWidth = nameFont.widthOfTextAtSize(name, nameFontSize);
+    }
+
+    page.drawText(name, {
+      x: pageWidth / 2 - nameWidth / 2,
+      y: 283,
+      size: nameFontSize,
+      font: nameFont,
+      color: rgb(0, 0, 0),
+    });
+
+    /* ===========================
+       2️⃣ DESCRIPTION TEXT (CENTERED)
+       =========================== */
+    const lines = [
+      `Has completed the internship program from ${internData.startMonth} to ${internData.endMonth}, showing`,
+      `exceptional dedication, professionalism, and contributions in the`,
+      `${internData.domain} Department at Athenura.`,
+    ];
+
+    const fontSize = 14;
+    const lineHeight = 22;
+    const startY = 235;
+
+    lines.forEach((line, index) => {
+      const textWidth = defaultFont.widthOfTextAtSize(line, fontSize);
+
+      page.drawText(line, {
+        x: pageWidth / 2 - textWidth / 2,
+        y: startY - index * lineHeight,
+        size: fontSize,
+        font: defaultFont,
+        color: rgb(0, 0, 0),
+      });
+    });
+
+    /* ===========================
+       3️⃣ CERTIFICATE ID
+       =========================== */
+    page.drawText(`Certificate ID: ${internData.certificateNumber}`, {
+      x: 200,
+      y: 35,
+      size: 10,
+      font: boldFont,
+      color: rgb(0, 0, 0),
+    });
+
+    /* ===========================
+       4️⃣ UNIQUE ID
+       =========================== */
+    page.drawText(`Unique ID: ${internData.uniqueId}`, {
+      x: 530,
+      y: 35,
+      size: 10,
+      font: boldFont,
+      color: rgb(0, 0, 0),
+    });
+
+    // 💾 Save PDF
+    const pdfBytes = await pdfDoc.save();
+    return Buffer.from(pdfBytes);
+  } catch (error) {
+    console.error("❌ Certificate generation error:", error);
+    throw new Error(`Failed to generate certificate: ${error.message}`);
   }
+}
 
   // Helper function to calculate text width
   static getTextWidth(text, font, fontSize) {
     return text.length * (fontSize * 0.6);
   }
 
-  // Helper function to split long text into multiple lines
-  static splitTextIntoLines(text, font, fontSize, maxWidth) {
-    const words = text.split(" ");
-    const lines = [];
-    let currentLine = words[0];
-
-    for (let i = 1; i < words.length; i++) {
-      const word = words[i];
-      const width = font.widthOfTextAtSize(currentLine + " " + word, fontSize);
-      if (width < maxWidth) {
-        currentLine += " " + word;
-      } else {
-        lines.push(currentLine);
-        currentLine = word;
-      }
-    }
-    lines.push(currentLine);
-    return lines;
-  }
 
   // ✉️ Send certificate email
   static async sendCertificateEmail(internEmail, internName, certificateBuffer, internData) {
