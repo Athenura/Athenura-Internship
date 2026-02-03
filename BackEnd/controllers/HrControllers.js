@@ -33,7 +33,8 @@ export const getAllInterns = async (req, res) => {
         { educationLevel: regex },
         { uniqueId: regex },
         { mobile: regex },
-        {TpoName: regex}
+        {TpoName: regex},
+        {createdAt: regex}
       ];
     }
 
