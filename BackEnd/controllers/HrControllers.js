@@ -33,10 +33,10 @@ export const getAllInterns = async (req, res) => {
         { educationLevel: regex },
         { uniqueId: regex },
         { mobile: regex },
-        {TpoName: regex},
+        { TpoName: regex },
       ];
     }
-    
+
 
     // 🎯 Add performance filter if provided
     if (performance) {
@@ -48,20 +48,11 @@ export const getAllInterns = async (req, res) => {
       searchQuery.domain = domain;
     }
 
-      if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(search)) {
-    const [d, m, y] = search.split("/").map(Number);
-
-    searchQuery.createdAt = {
-      $gte: new Date(y, m - 1, d, 0, 0, 0),
-      $lte: new Date(y, m - 1, d, 23, 59, 59)
-    };
-  }
-
 
     // ⚡ Fetch data efficiently
     const interns = await Intern.find(searchQuery)
       .sort({ createdAt: -1 });
-      
+
     // ✅ Count total documents (faster than interns.length for large results)
     const total = await Intern.countDocuments(searchQuery);
 
