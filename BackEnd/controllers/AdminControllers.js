@@ -623,7 +623,7 @@ export const generateBulkOfferLetters = async (req, res) => {
         page.drawText(intern.uniqueId, { x: 60, y, size: 14, font: fontBold });
 
         y -= 15;
-        page.drawText("Date:", { x: 75, y, size: 14, font: fontBold });
+        page.drawText("Date:", { x: 60, y, size: 14, font: fontBold });
         page.drawText(formattedJoiningDate, { x: 100, y, size: 14, font });
 
         // 5️⃣ Generate PDF bytes
