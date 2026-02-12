@@ -416,7 +416,7 @@ const InternVerificationPortal = () => {
         }
 
         .sig-img {
-          max-height: 110px;
+          max-height: 70px;
           margin-top: 20px;
           mix-blend-mode: multiply;
         }
