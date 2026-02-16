@@ -1522,9 +1522,9 @@ const scrollToTop = () => {
                           <td className="p-3">
                             <div className="text-gray-700">📞 {intern.mobile || "Not provided"}</div>
                             <p className="text-xs font-bold text-gray-500 mt-1">
-                              Applied:{" "}
-                              {intern.updatedAt
-                                ? new Date(intern.updatedAt).toLocaleDateString()
+                              Joining Date:{" "}
+                              {intern.joiningDate
+                                ? new Date(intern.joiningDate).toLocaleDateString()
                                 : "Not provided"}
                             </p>
                           </td>
