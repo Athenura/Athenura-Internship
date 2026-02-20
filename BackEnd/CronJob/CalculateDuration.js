@@ -79,7 +79,7 @@ export const updateInternStatus = async () => {
   }
 };
 
-export const startInternshipCronJob = () => {
+export const startInternshipCronJob = async () => {
   cron.schedule("0 0 * * *", async () => {
     console.log("🕒 Running internship status update cron job...");
     await updateInternStatus();

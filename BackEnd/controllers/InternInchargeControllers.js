@@ -1249,9 +1249,8 @@ export const approvedLeaveStatus = async (req, res) => {
 
     // Update leave status
     leave.status = 'Approved';
-    intern.leavesTaken = (intern.leavesTaken || 0) + leave.totalDays;
     await intern.save();
-    await leave.save();
+ 
 
     // Send approval email to intern
     const subject = `Leave Request Approved - Athenura Internship Program`;

@@ -1358,11 +1358,6 @@ export const approveLeave = async (req, res) => {
     leave.status = 'Approved';
     await leave.save();
 
-    // Update intern's leave count
-    await Intern.findByIdAndUpdate(leave.internId._id, {
-      $inc: { leavesTaken: leave.totalDays }
-    });
-
     // Send approval email (use the same email function from before)
     const subject = `Leave Request Approved - Athenura Internship Program`;
     const htmlContent = `
