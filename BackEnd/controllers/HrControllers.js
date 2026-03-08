@@ -1,4 +1,5 @@
 import Intern from "../models/InternDatabase.js";
+import { sendEmail } from "../config/emailConfig.js";
 
 // ✅ Fetch all interns (with search, filter, pagination)
 export const getAllInterns = async (req, res) => {
@@ -11,7 +12,7 @@ export const getAllInterns = async (req, res) => {
     } = req.query;
 
     // ✅ Allowed status values
-    const allowedStatuses = ["Applied", "Selected", "Rejected"]; // Added Rejected
+    const allowedStatuses = ["Applied", "Selected", "Rejected", "Mailed"]; // Added Rejected
 
     // 🧩 Build query efficiently
     const searchQuery = {
@@ -421,3 +422,254 @@ export const ImportedIntern = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+function formatTimeToAMPM(time) {
+  if (!time) return "";
+
+  const [hours, minutes] = time.split(":");
+  let h = parseInt(hours);
+  const ampm = h >= 12 ? "PM" : "AM";
+
+  h = h % 12;
+  h = h ? h : 12;
+
+  return `${h}:${minutes} ${ampm}`;
+}
+
+export const sendInterviewEmail = async (req, res) => {
+  try {
+    const {
+      to,
+      toName,
+      subject,
+      meetingLink,
+      meetingDate,
+      meetingTime,
+      meetingPlatform,
+      customMessage,
+      hrName,
+      hrEmail,
+      domain
+    } = req.body;
+
+    if (!to || !meetingLink || !meetingDate || !meetingTime) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
+
+    const formattedDate = new Date(meetingDate).toLocaleDateString("en-IN", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const formattedTime = formatTimeToAMPM(meetingTime);
+
+    // Convert domain to array if not already
+    const domains = Array.isArray(domain) ? domain : [domain];
+
+    // Create HTML for domain list
+    let domainSections = "";
+
+    domains.forEach((d) => {
+      domainSections += `
+        <tr>
+          <td style="padding:10px;border:1px solid #ddd">${d}</td>
+          <td style="padding:10px;border:1px solid #ddd">${formattedDate}</td>
+          <td style="padding:10px;border:1px solid #ddd">${formattedTime}</td>
+          <td style="padding:10px;border:1px solid #ddd">
+            <a href="${meetingLink}">Join Meeting</a>
+          </td>
+        </tr>
+      `;
+    });
+
+    // Candidate Email
+    const htmlContent = `
+<div style="background:#f3f4f6;padding:40px 10px;font-family:Segoe UI,Tahoma,sans-serif;color:#374151;">
+  
+  <div style="max-width:640px;margin:auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 10px 25px rgba(0,0,0,0.08);">
+
+    <!-- Header -->
+    <div style="background:#4f46e5;padding:35px;text-align:center;">
+      <h1 style="margin:0;color:#ffffff;font-size:26px;">Interview Invitation</h1>
+      <p style="margin-top:8px;color:#e0e7ff;font-size:15px;">
+        Athenura Internship Program
+      </p>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:35px 30px;">
+
+      <p style="font-size:16px;">Dear <strong>${toName}</strong>,</p>
+
+      <p style="font-size:15px;line-height:1.6;color:#4b5563;">
+        Greetings from <strong>Athenura</strong>!  
+        We are delighted to inform you that you have been 
+        <strong>shortlisted for the interview round</strong> of the 
+        Athenura Internship Program.
+      </p>
+
+      <p style="font-size:15px;line-height:1.6;color:#4b5563;">
+        Based on your application, we believe your profile aligns well with our team and learning culture.
+      </p>
+
+      <!-- Interview Details -->
+      <div style="margin:30px 0;border:1px solid #e5e7eb;border-radius:10px;padding:22px;background:#fafafa;">
+        <h3 style="margin-top:0;color:#111827;font-size:18px;">Interview Details</h3>
+
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;">Domain</td>
+            <td style="padding:6px 0;font-weight:600;color:#111827;">${domain}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;">Date</td>
+            <td style="padding:6px 0;font-weight:600;color:#111827;">${formattedDate}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;">Time</td>
+            <td style="padding:6px 0;font-weight:600;color:#111827;">${formattedTime}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;">Duration</td>
+            <td style="padding:6px 0;font-weight:600;color:#111827;">1 Hour</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;">Platform</td>
+            <td style="padding:6px 0;font-weight:600;color:#111827;">${meetingPlatform}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;">Meeting Link</td>
+            <td style="padding:6px 0;font-weight:600;color:#111827;">${meetingLink}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Interview Overview -->
+      <div style="margin:25px 0;">
+        <h3 style="font-size:18px;margin-bottom:10px;color:#111827;">Interview Overview</h3>
+
+        <ul style="padding-left:18px;color:#4b5563;font-size:14px;line-height:1.7;">
+          <li>Discussion about your background, interests, and communication skills</li>
+          <li>Understanding your knowledge related to the selected role</li>
+          <li>Exploring your learning mindset and career goals</li>
+          <li>Explaining expectations and growth opportunities at Athenura</li>
+        </ul>
+      </div>
+
+      <!-- Portfolio Section -->
+      <div style="background:#f9fafb;border-radius:8px;padding:18px;margin:25px 0;">
+        <p style="margin:0;font-size:14px;color:#374151;">
+          You may share any relevant work during the interview such as:
+        </p>
+
+        <ul style="margin-top:10px;padding-left:18px;font-size:14px;color:#4b5563;">
+          <li>Projects, portfolios, or GitHub work (for technical roles)</li>
+          <li>Content, marketing campaigns, research, or presentations (for non-technical roles)</li>
+        </ul>
+      </div>
+
+      <!-- Join Button -->
+      <div style="text-align:center;margin:35px 0;">
+        <a href="${meetingLink}" 
+        style="background:#4f46e5;color:#ffffff;padding:14px 32px;
+        text-decoration:none;border-radius:8px;font-weight:600;
+        font-size:15px;display:inline-block;">
+        Join Interview
+        </a>
+      </div>
+
+      ${customMessage
+        ? `<div style="border-left:4px solid #4f46e5;padding-left:14px;margin:25px 0;color:#4b5563;font-style:italic;">
+              "${customMessage}"
+            </div>`
+        : ""
+      }
+
+      <p style="font-size:13px;color:#9ca3af;text-align:center;">
+        Please join the meeting from a quiet location with a stable internet connection.
+      </p>
+
+    </div>
+
+    <!-- Footer -->
+    <div style="background:#f9fafb;padding:28px;text-align:center;border-top:1px solid #e5e7eb;">
+      <p style="margin:0;font-weight:600;color:#111827;">${hrName}</p>
+      <p style="margin:5px 0;font-size:14px;color:#6b7280;">
+        HR Team • Athenura
+      </p>
+
+      <p style="margin:5px 0;font-size:13px;color:#4f46e5;">
+        ${hrEmail}
+      </p>
+
+      <p style="margin-top:15px;font-size:12px;color:#9ca3af;">
+        © ${new Date().getFullYear()} Athenura. All rights reserved.
+      </p>
+    </div>
+
+  </div>
+</div>
+`;
+
+    await sendEmail(to, subject, htmlContent);
+
+    // =============================
+    // SINGLE ADMIN EMAIL
+    // =============================
+
+    const adminHtml = `
+<div style="font-family:Arial;padding:20px">
+
+<h2>📢 Interview Schedule Notification</h2>
+
+<table style="border-collapse:collapse;width:100%;margin-top:20px">
+
+<tr style="background:#f3f4f6">
+<th style="padding:10px;border:1px solid #ddd">Domain</th>
+<th style="padding:10px;border:1px solid #ddd">Date</th>
+<th style="padding:10px;border:1px solid #ddd">Time</th>
+<th style="padding:10px;border:1px solid #ddd">Meeting Link</th>
+</tr>
+
+${domainSections}
+
+</table>
+
+<p style="margin-top:20px;color:gray">
+Automated mail from Athenura Internship System
+</p>
+
+</div>
+`;
+
+    await sendEmail(
+      "mrsameersingh001@gmail.com",
+      "Athenura Interview Schedule",
+      adminHtml
+    );
+
+    res.json({
+      success: true,
+      message: "Interview email sent successfully",
+    });
+
+  } catch (error) {
+    console.error("Interview email error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to send interview email",
+    });
+  }
+};
+
+

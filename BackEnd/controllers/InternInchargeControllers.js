@@ -4,7 +4,7 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { sendEmail } from "../config/emailConfig.js"
 import Attendance from "../models/Attendance.js"
-import Performance from "../models/Performance.js"  
+import Performance from "../models/Performance.js"
 import Leave from "../models/LeaveDB.js"
 
 export const registerInternIncharge = async (req, res) => {
@@ -576,7 +576,7 @@ Best regards,
  Athenura Team
 🌐 www.athenura.in`;
 
-    if (status == "Present") {
+    if (status == "Present"){
       await sendEmail(
         intern.email,
         `Athenura - Attendance Update for ${formattedDate}`,
@@ -793,17 +793,17 @@ export const ExtendedDays = async (req, res) => {
 
     // Calculate current end date (before extension)
     const currentEndDate = calculateCurrentEndDate(intern);
-    
+
     // Calculate new end date after extension
     const newEndDate = new Date(currentEndDate);
     newEndDate.setDate(newEndDate.getDate() + parseInt(extendedDays));
 
     // Check if extension crosses into a new month
     const crossesNewMonth = checkIfCrossesMonth(currentEndDate, newEndDate);
-    
+
     // Calculate extended months (only if crossing into new month)
     const extendedMonths = crossesNewMonth ? calculateMonthsBetween(currentEndDate, newEndDate) : 0;
-    
+
     // Calculate total extended days
     const totalExtendedDays = (intern.extendedDays || 0) + parseInt(extendedDays);
 
@@ -883,7 +883,7 @@ export const ExtendedDays = async (req, res) => {
       // Don't throw error - email failure shouldn't prevent extension
     });
 
-    const extensionMessage = extendedMonths > 0 
+    const extensionMessage = extendedMonths > 0
       ? `by ${extendedDays} days (adding ${extendedMonths} month${extendedMonths > 1 ? 's' : ''} to performance tracking)`
       : `by ${extendedDays} days (within same month)`;
 
@@ -949,12 +949,12 @@ const checkIfCrossesMonth = (currentEndDate, newEndDate) => {
 const calculateMonthsBetween = (date1, date2) => {
   let months = (date2.getFullYear() - date1.getFullYear()) * 12;
   months += date2.getMonth() - date1.getMonth();
-  
+
   // If day of month is also important, add partial month
   if (date2.getDate() > date1.getDate()) {
     months += 0.5; // Consider as partial month
   }
-  
+
   return Math.ceil(months); // Always round up to nearest month
 };
 
@@ -967,11 +967,11 @@ const addExtendedMonthsToPerformance = async (internId, extendedMonths) => {
     if (!performance) {
       // If no performance record exists, create one with extended months
       const intern = await Intern.findById(internId);
-      
+
       // Calculate original duration in months
       const originalDurationMonths = calculateDurationInMonths(intern.duration);
       const totalMonths = originalDurationMonths + extendedMonths;
-      
+
       const monthlyPerformance = [];
 
       for (let i = 1; i <= totalMonths; i++) {
@@ -999,7 +999,7 @@ const addExtendedMonthsToPerformance = async (internId, extendedMonths) => {
       // If performance record exists, add new months
       const currentMonths = performance.monthlyPerformance.length;
       const startMonth = currentMonths + 1;
-      
+
       for (let i = startMonth; i <= currentMonths + extendedMonths; i++) {
         performance.monthlyPerformance.push({
           monthLabel: `Month ${i}`,
@@ -1020,7 +1020,7 @@ const addExtendedMonthsToPerformance = async (internId, extendedMonths) => {
 
     await performance.save();
     console.log(`Added ${extendedMonths} month(s) to performance record for intern ${internId}`);
-    
+
   } catch (error) {
     console.error("Error updating performance record with extended months:", error);
   }
@@ -1047,10 +1047,10 @@ export const getInternPerformance = async (req, res) => {
       // Calculate current end date to determine if extension crossed months
       const currentEndDate = calculateCurrentEndDate(intern);
       const joinDate = new Date(intern.joiningDate);
-      
+
       // Calculate months based on time difference between joining and current end date
       const monthsDiff = calculateMonthsBetweenDates(joinDate, currentEndDate);
-      
+
       const monthlyPerformance = [];
 
       for (let i = 1; i <= monthsDiff; i++) {
@@ -1113,7 +1113,7 @@ const calculateOverallPerformance = (monthlyPerformance) => {
 
   const validMonths = monthlyPerformance.filter(month => month.overallRating > 0);
   if (validMonths.length === 0) return "Good";
-  
+
   const avgRating = validMonths.reduce((sum, month) => sum + month.overallRating, 0) / validMonths.length;
 
   if (avgRating >= 8.5) return "Excellent";
@@ -1250,7 +1250,7 @@ export const approvedLeaveStatus = async (req, res) => {
     // Update leave status
     leave.status = 'Approved';
     await intern.save();
- 
+
 
     // Send approval email to intern
     const subject = `Leave Request Approved - Athenura Internship Program`;

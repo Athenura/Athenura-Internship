@@ -1,5 +1,5 @@
 import express from "express";
-import {getAllInterns, getInternById, updatePerformance, updateStatus, updateDomain, addHrComment, getHrComments, deleteHrComment,deleteRejectMany, ImportedIntern} from "../controllers/HrControllers.js";
+import {getAllInterns, getInternById, updatePerformance,sendInterviewEmail, updateStatus, updateDomain, addHrComment, getHrComments, deleteHrComment,deleteRejectMany, ImportedIntern} from "../controllers/HrControllers.js";
 import { verifyToken } from "../middlewares/AuthVerify.js";
 import { logoutUser } from "../controllers/AuthController.js";
 
@@ -16,6 +16,7 @@ router.delete("/hr/interns/:id/hr-comments/:commentId", verifyToken, deleteHrCom
 router.delete("/hr/interns/delete-rejected", verifyToken, deleteRejectMany)
 router.post("/logout", verifyToken, logoutUser);
 router.post("/hr/import-interns", verifyToken, ImportedIntern);
+router.post("/hr/send-interview-email", verifyToken, sendInterviewEmail);
 
 export default router;
     

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Athenura from "../../../public/AthenuraLogo.jpg";
-import { Eye, FileText, Download, Upload, X } from "lucide-react";
+import { Eye, FileText, Download, Upload, X, Mail, Send, Link, Calendar, Clock, Search } from "lucide-react";
 import * as XLSX from "xlsx";
 
 const HRDashboard = () => {
@@ -19,12 +19,41 @@ const HRDashboard = () => {
   const [copySuccess, setCopySuccess] = useState("");
   const [exportLoading, setExportLoading] = useState(false);
   const [selectedDomain, setSelectedDomain] = useState("");
+
+  // Email functionality states
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [selectedInterns, setSelectedInterns] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+  const [emailForm, setEmailForm] = useState({
+    subject: "Interview Invitation - Athenura Internship",
+    meetingLink: "",
+    meetingDate: "",
+    meetingTime: "",
+    meetingPlatform: "Google Meet",
+    customMessage: "",
+    hrName: storedUser?.fullName || "HR Team",
+    hrEmail: storedUser?.email || "hr@athenura.com"
+  });
+
   // Import functionality states
   const [importLoading, setImportLoading] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importFile, setImportFile] = useState(null);
   const [previewData, setPreviewData] = useState([]);
   const [importSummary, setImportSummary] = useState(null);
+
+  // Add these with other email functionality states
+  const [emailSearchTerm, setEmailSearchTerm] = useState("");
+  const [emailDomainFilter, setEmailDomainFilter] = useState("");
+  const [emailCollegeFilter, setEmailCollegeFilter] = useState("");
+  const [emailDateFilter, setEmailDateFilter] = useState("");
+  const [emailDateRange, setEmailDateRange] = useState({
+    from: "",
+    to: ""
+  });
+  const [showDateRange, setShowDateRange] = useState(false);
+
   const navigate = useNavigate();
   const printRef = useRef();
   const fileInputRef = useRef();
@@ -32,7 +61,7 @@ const HRDashboard = () => {
   useEffect(() => {
     const timer = setTimeout(() => fetchInterns(), 500);
     return () => clearTimeout(timer);
-  }, [search, status, performance]);
+  }, [search, status, performance, selectedDomain]);
 
   const fetchInterns = async () => {
     setLoading(true);
@@ -49,11 +78,170 @@ const HRDashboard = () => {
     setLoading(false);
   };
 
+  const formatTimeToAMPM = (time) => {
+    if (!time) return "";
 
-  useEffect(() => {
-    const timer = setTimeout(() => fetchInterns(), 500);
-    return () => clearTimeout(timer);
-  }, [search, status, performance, selectedDomain]); // Add selectedDomain here
+    const [hours, minutes] = time.split(":");
+    let h = parseInt(hours);
+    const ampm = h >= 12 ? "PM" : "AM";
+
+    h = h % 12;
+    h = h ? h : 12;
+
+    return `${h}:${minutes} ${ampm}`;
+  };
+  // Email Functions
+  const openEmailModal = () => {
+    // Filter interns with Applied status
+    const appliedInterns = interns.filter(intern => intern.status === "Applied");
+    if (appliedInterns.length === 0) {
+      setError("No interns with 'Applied' status found to send emails");
+      setTimeout(() => setError(""), 3000);
+      return;
+    }
+    setSelectedInterns(appliedInterns.map(intern => ({
+      ...intern,
+      selected: false
+    })));
+    setShowEmailModal(true);
+  };
+
+  const handleSelectAll = () => {
+    setSelectAll(!selectAll);
+    setSelectedInterns(prev =>
+      prev.map(intern => ({ ...intern, selected: !selectAll }))
+    );
+  };
+
+  const handleSelectIntern = (internId) => {
+    setSelectedInterns(prev => {
+      const updated = prev.map(intern =>
+        intern._id === internId
+          ? { ...intern, selected: !intern.selected }
+          : intern
+      );
+
+      const allSelected = updated.every(intern => intern.selected);
+      setSelectAll(allSelected);
+
+      return updated;
+    });
+  };
+
+  const handleEmailFormChange = (e) => {
+    setEmailForm({
+      ...emailForm,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const sendInterviewEmails = async () => {
+    // Validate selections
+    const selectedToEmail = selectedInterns.filter(intern => intern.selected);
+
+    if (selectedToEmail.length === 0) {
+      setError("Please select at least one intern to email");
+      setTimeout(() => setError(""), 3000);
+      return;
+    }
+
+    // Validate meeting link
+    if (!emailForm.meetingLink) {
+      setError("Please enter a meeting link");
+      setTimeout(() => setError(""), 3000);
+      return;
+    }
+
+    // Validate meeting date
+    if (!emailForm.meetingDate) {
+      setError("Please select a meeting date");
+      setTimeout(() => setError(""), 3000);
+      return;
+    }
+
+    // Validate meeting time
+    if (!emailForm.meetingTime) {
+      setError("Please select a meeting time");
+      setTimeout(() => setError(""), 3000);
+      return;
+    }
+
+    setEmailLoading(true);
+
+    try {
+      // Prepare email data for each selected intern
+      const emailPromises = selectedToEmail.map(async (intern) => {
+        const emailData = {
+          to: intern.email,
+          toName: intern.fullName,
+          subject: emailForm.subject,
+          meetingLink: emailForm.meetingLink,
+          meetingDate: emailForm.meetingDate,
+          meetingTime: emailForm.meetingTime,
+          meetingPlatform: emailForm.meetingPlatform,
+          customMessage: emailForm.customMessage,
+          hrName: emailForm.hrName,
+          hrEmail: emailForm.hrEmail,
+          internId: intern._id,
+          domain: intern.domain
+        };
+
+        // Send email via Brevo (SendinBlue)
+        const response = await axios.post("/api/hr/send-interview-email", emailData, {
+          withCredentials: true
+        });
+
+        // Update intern status to "Mailed" after successful email
+        if (response.data.success) {
+          await axios.put(
+            `/api/hr/interns/${intern._id}/status`,
+            { status: "Mailed" },
+            { withCredentials: true }
+          );
+        }
+
+        return response.data;
+      });
+
+      const results = await Promise.all(emailPromises);
+
+      // Check if all emails were sent successfully
+      const allSuccess = results.every(result => result.success);
+
+      if (allSuccess) {
+        setCopySuccess(`✅ Successfully sent interview emails to ${selectedToEmail.length} intern(s) and updated status to "Mailed"`);
+
+        // Refresh the interns list
+        await fetchInterns();
+
+        // Close modal after successful sending
+        setTimeout(() => {
+          setShowEmailModal(false);
+          setSelectedInterns([]);
+          setSelectAll(false);
+          setEmailForm({
+            subject: "Interview Invitation - Athenura Internship",
+            meetingLink: "",
+            meetingDate: "",
+            meetingTime: "",
+            meetingPlatform: "Google Meet",
+            customMessage: "",
+            hrName: storedUser?.fullName || "HR Team",
+            hrEmail: storedUser?.email || "hr@athenura.com"
+          });
+        }, 3000);
+      } else {
+        setError("Some emails failed to send. Please check the logs.");
+      }
+    } catch (err) {
+      console.error("Error sending emails:", err);
+      setError("Failed to send emails: " + (err.response?.data?.message || err.message));
+    } finally {
+      setEmailLoading(false);
+      setTimeout(() => setCopySuccess(""), 5000);
+      setTimeout(() => setError(""), 5000);
+    }
+  };
 
   // Import Functions
   const handleFileSelect = async (event) => {
@@ -166,8 +354,8 @@ const HRDashboard = () => {
       'TPO Name': 'Dr. Smith',
       'TPO Email': 'smith@college.edu',
       'TPO Number': '9876543210',
-      'Unique ID': 'OPTIONAL123', // Optional field
-      'Joining Date': '2024-01-15' // Optional field
+      'Unique ID': 'OPTIONAL123',
+      'Joining Date': '2024-01-15'
     }];
 
     const wb = XLSX.utils.book_new();
@@ -180,7 +368,7 @@ const HRDashboard = () => {
       { wch: 10 }, { wch: 25 }, { wch: 20 }, { wch: 15 },
       { wch: 20 }, { wch: 15 }, { wch: 30 }, { wch: 10 },
       { wch: 5 }, { wch: 15 }, { wch: 20 }, { wch: 15 },
-      { wch: 15 }, { wch: 15 } // Added for Unique ID and Joining Date
+      { wch: 15 }, { wch: 15 }
     ];
     ws['!cols'] = colWidths;
 
@@ -304,6 +492,68 @@ const HRDashboard = () => {
     setExportLoading(false);
   };
 
+
+  // Filter interns for email modal
+  const getFilteredEmailInterns = () => {
+    let filtered = selectedInterns;
+
+    // Search filter (name, email, domain, college)
+    if (emailSearchTerm) {
+      const searchLower = emailSearchTerm.toLowerCase();
+      filtered = filtered.filter(intern =>
+        intern.fullName?.toLowerCase().includes(searchLower) ||
+        intern.email?.toLowerCase().includes(searchLower) ||
+        intern.domain?.toLowerCase().includes(searchLower) ||
+        intern.college?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Domain filter
+    if (emailDomainFilter) {
+      filtered = filtered.filter(intern =>
+        intern.domain === emailDomainFilter
+      );
+    }
+
+    // College filter
+    if (emailCollegeFilter) {
+      const collegeLower = emailCollegeFilter.toLowerCase();
+      filtered = filtered.filter(intern =>
+        intern.college?.toLowerCase().includes(collegeLower)
+      );
+    }
+
+    // Date filter
+    if (showDateRange && emailDateRange.from && emailDateRange.to) {
+      const fromDate = new Date(emailDateRange.from);
+      const toDate = new Date(emailDateRange.to);
+      toDate.setHours(23, 59, 59, 999); // End of day
+
+      filtered = filtered.filter(intern => {
+        if (!intern.createdAt) return false;
+        const internDate = new Date(intern.createdAt);
+        return internDate >= fromDate && internDate <= toDate;
+      });
+    } else if (emailDateFilter) {
+      const filterDate = new Date(emailDateFilter);
+      filtered = filtered.filter(intern => {
+        if (!intern.createdAt) return false;
+        const internDate = new Date(intern.createdAt);
+        return internDate.toDateString() === filterDate.toDateString();
+      });
+    }
+
+    return filtered;
+  };
+
+  // Get unique domains for filter dropdown
+  const getUniqueDomains = () => {
+    const domains = [...new Set(selectedInterns.map(intern => intern.domain).filter(Boolean))];
+    return domains.sort();
+  };
+
+
+
   // Export only selected interns
   const exportSelectedToExcel = () => {
     setExportLoading(true);
@@ -319,66 +569,39 @@ const HRDashboard = () => {
 
       // Prepare data for Excel
       const excelData = selectedInterns.map(intern => ({
-        // 🔹 Basic Info
         'Full Name': intern.fullName || '',
         'Email': intern.email || '',
         'Mobile': intern.mobile || '',
         'Date of Birth': intern.dob || '',
         'Gender': intern.gender || '',
-
-        // 🔹 Location Info
         'State': intern.state || '',
         'City': intern.city || '',
         'Address': intern.address || '',
         'Pin Code': intern.pinCode || '',
-
-        // 🔹 Education Details
         'College': intern.college || '',
         'Course': intern.course || '',
         'Education Level': intern.educationLevel || '',
-
-        // 🔹 Internship Details
         'Domain': intern.domain || '',
         'Duration': intern.duration || '',
         'Previous Internship': intern.prevInternship || 'No',
-
-        // 🔹 Status & Performance
         'Status': intern.status || '',
         'Performance': intern.performance || '',
         'Comment': intern.comment || '',
-
-        // 🔹 Contact / Communication
         'Contact Method': intern.contactMethod || '',
         'Resume URL': intern.resumeUrl || '',
-
-        // 🔹 TPO / College Incharge
         'TPO Name': intern.TpoName || '',
         'TPO Email': intern.TpoEmail || '',
         'TPO Number': intern.TpoNumber || '',
-
-        'Applied Date': intern.createdAt
-          ? new Date(intern.createdAt).toLocaleDateString()
-          : '',
+        'Applied Date': intern.createdAt ? new Date(intern.createdAt).toLocaleDateString() : '',
       }));
 
-
-      // Create workbook and worksheet
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.json_to_sheet(excelData);
 
-      // Set column widths
-      const colWidths = [
-        { wch: 20 }, { wch: 25 }, { wch: 15 }, { wch: 20 },
-        { wch: 15 }, { wch: 25 }, { wch: 12 }, { wch: 12 },
-        { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
-        { wch: 30 }, { wch: 12 }
-      ];
+      const colWidths = Array(excelData[0] ? Object.keys(excelData[0]).length : 0).fill({ wch: 15 });
       ws['!cols'] = colWidths;
 
-      // Add worksheet to workbook
       XLSX.utils.book_append_sheet(wb, ws, "Selected Interns");
-
-      // Generate Excel file and download
       const fileName = `selected_interns_${new Date().toISOString().split('T')[0]}.xlsx`;
       XLSX.writeFile(wb, fileName);
 
@@ -394,14 +617,14 @@ const HRDashboard = () => {
   };
 
   const handleStatusUpdate = async (internId, newStatus, currentPerformance) => {
-    // ✅ Business Rule 1: can only mark "Selected" if performance is Good or Excellent
+    // Business Rule 1: can only mark "Selected" if performance is Good or Excellent
     if (newStatus === "Selected" && !(currentPerformance === "Good" || currentPerformance === "Excellent")) {
       setError("⚠️ Cannot mark as Selected. Performance must be Good or Excellent first.");
       setTimeout(() => setError(""), 2000);
       return;
     }
 
-    // ✅ Business Rule 2: can only mark "Rejected" if performance is Poor
+    // Business Rule 2: can only mark "Rejected" if performance is Poor
     if (newStatus === "Rejected" && currentPerformance !== "Poor") {
       setError("⚠️ Cannot mark as Rejected. Performance must be marked as Poor first.");
       setTimeout(() => setError(""), 2000);
@@ -415,7 +638,7 @@ const HRDashboard = () => {
         { status: newStatus },
         { withCredentials: true }
       );
-      await fetchInterns(); // Refresh the list
+      await fetchInterns();
     } catch (err) {
       console.error("Error updating status:", err);
       setError("Failed to update status");
@@ -431,7 +654,7 @@ const HRDashboard = () => {
         { performance: newPerformance },
         { withCredentials: true }
       );
-      await fetchInterns(); // Refresh the list
+      await fetchInterns();
     } catch (err) {
       console.error("Error updating performance:", err);
       setError("Failed to update performance");
@@ -447,7 +670,7 @@ const HRDashboard = () => {
         { domain: newDomain },
         { withCredentials: true }
       );
-      await fetchInterns(); // Refresh the list
+      await fetchInterns();
     } catch (err) {
       console.error("Error updating domain:", err);
       setError("Failed to update domain");
@@ -468,7 +691,7 @@ const HRDashboard = () => {
   const handlePrint = () => {
     const printContent = printRef.current;
     if (!printContent) return;
-    // Create print-friendly content
+
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -497,7 +720,7 @@ const HRDashboard = () => {
             }
             .print-stats {
               display: grid;
-              grid-template-columns: repeat(3, 1fr);
+              grid-template-columns: repeat(4, 1fr);
               gap: 15px;
               margin-bottom: 30px;
             }
@@ -542,12 +765,13 @@ const HRDashboard = () => {
               font-weight: bold;
             }
             .status-Applied { background-color: #dbeafe; color: #1e40af; }
+            .status-Mailed { background-color: #fef3c7; color: #92400e; }
             .status-Selected { background-color: #dcfce7; color: #166534; }
             .status-Rejected { background-color: #fee2e2; color: #991b1b; }
             .performance-Average { background-color: #fef3c7; color: #92400e; }
             .performance-Good { background-color: #dcfce7; color: #166534; }
             .performance-Excellent { background-color: #e0e7ff; color: #3730a3; }
-            .performance-Poor { background-color: #fee2e2; color: #991b1b; } // Add this line
+            .performance-Poor { background-color: #fee2e2; color: #991b1b; }
             .unique-id {
               background-color: #f3e8ff;
               color: #7c3aed;
@@ -598,7 +822,6 @@ const HRDashboard = () => {
     printWindow.document.close();
     printWindow.focus();
 
-    // Wait for content to load before printing
     setTimeout(() => {
       printWindow.print();
       printWindow.close();
@@ -650,6 +873,7 @@ const HRDashboard = () => {
       case "Selected": return "bg-green-100 text-green-800";
       case "Rejected": return "bg-red-100 text-red-800";
       case "Applied": return "bg-blue-100 text-blue-800";
+      case "Mailed": return "bg-yellow-100 text-yellow-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
@@ -659,7 +883,7 @@ const HRDashboard = () => {
       case "Excellent": return "bg-purple-100 text-purple-800";
       case "Good": return "bg-green-100 text-green-800";
       case "Average": return "bg-yellow-100 text-yellow-800";
-      case "Poor": return "bg-red-100 text-red-800"; // Add this line
+      case "Poor": return "bg-red-100 text-red-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
@@ -669,6 +893,8 @@ const HRDashboard = () => {
     : interns;
 
   const selectedCount = interns.filter(intern => intern.status === "Selected").length;
+  const appliedCount = interns.filter(intern => intern.status === "Applied").length;
+  const mailedCount = interns.filter(intern => intern.status === "Mailed").length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -681,12 +907,21 @@ const HRDashboard = () => {
                 <img src={Athenura} alt="Athenura Logo" className="sm:h-12 h-8 mr-5" />
                 <div>
                   <h1 className="sm:text-2xl ml-2 text-s font-bold text-gray-800">HR Dashboard</h1>
-                  <p className="text-blue-400 font-bold sm:text-lg text-sm">👋 Hi  {storedUser?.fullName}</p>
+                  <p className="text-blue-400 font-bold sm:text-lg text-sm">👋 Hi {storedUser?.fullName}</p>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-3">
+              {/* Send Interview Emails Button */}
+              <button
+                onClick={openEmailModal}
+                className="px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg no-print flex items-center gap-2"
+              >
+                <Mail className="w-4 h-4" />
+                Send Interview Mails ({appliedCount})
+              </button>
+
               {/* Import Button */}
               <button
                 onClick={() => setShowImportModal(true)}
@@ -723,7 +958,7 @@ const HRDashboard = () => {
                 <button
                   onClick={exportSelectedToExcel}
                   disabled={exportLoading}
-                  className={`px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg no-print flex items-center gap-2 ${exportLoading ? 'opacity-50 cursor-not-allowed' : 'hover:from-blue-600 hover:to-blue-700'
+                  className={`px-6 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg no-print flex items-center gap-2 ${exportLoading ? 'opacity-50 cursor-not-allowed' : 'hover:from-purple-600 hover:to-purple-700'
                     }`}
                 >
                   <Download className="w-4 h-4" />
@@ -733,10 +968,11 @@ const HRDashboard = () => {
 
               <button
                 onClick={handlePrint}
-                className="px-6 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg no-print"
+                className="px-6 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg no-print"
               >
-                📄 Print Report
+                🖨️ Print Report
               </button>
+
               <button
                 onClick={handleLogout}
                 className="px-6 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg no-print"
@@ -754,7 +990,7 @@ const HRDashboard = () => {
           </div>
         )}
 
-        {/* Email Copy Success Message */}
+        {/* Success Message */}
         {copySuccess && (
           <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative animate-fade-in">
             <span className="block sm:inline">{copySuccess}</span>
@@ -766,15 +1002,21 @@ const HRDashboard = () => {
           {/* Filters Section */}
           <div className="mb-8 no-print">
             {interns.length > 0 && (
-              <div className="mt-6 grid grid-cols-2 md:grid-cols-7 gap-4">
+              <div className="mt-6 grid grid-cols-2 md:grid-cols-8 gap-4">
                 <div className="bg-blue-50 rounded-lg p-4 text-center">
                   <div className="text-2xl font-bold text-blue-600">{interns.length}</div>
                   <div className="text-sm text-blue-800">Total Interns</div>
                 </div>
+                <div className="bg-yellow-50 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-yellow-600">{appliedCount}</div>
+                  <div className="text-sm text-yellow-800">Applied</div>
+                </div>
+                <div className="bg-orange-50 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-orange-600">{mailedCount}</div>
+                  <div className="text-sm text-orange-800">Mailed</div>
+                </div>
                 <div className="bg-green-50 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-green-600">
-                    {selectedCount}
-                  </div>
+                  <div className="text-2xl font-bold text-green-600">{selectedCount}</div>
                   <div className="text-sm text-green-800">Selected</div>
                 </div>
                 <div className="bg-red-50 rounded-lg p-4 text-center">
@@ -789,49 +1031,44 @@ const HRDashboard = () => {
                   </div>
                   <div className="text-sm text-purple-800">Excellent</div>
                 </div>
-                <div className="bg-orange-50 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-orange-600">
+                <div className="bg-indigo-50 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-indigo-600">
                     {interns.filter(i => i.performance === 'Good').length}
                   </div>
-                  <div className="text-sm text-orange-800">Good</div>
-                </div>
-                <div className="bg-yellow-50 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-yellow-600">
-                    {interns.filter(i => i.status === 'Applied').length}
-                  </div>
-                  <div className="text-sm text-yellow-800">Pending</div>
+                  <div className="text-sm text-indigo-800">Good</div>
                 </div>
                 <div
-                  className="bg-indigo-50 rounded-lg p-4 text-center cursor-pointer hover:bg-indigo-100 transition-colors border-2 border-indigo-200"
+                  className="bg-teal-50 rounded-lg p-4 text-center cursor-pointer hover:bg-teal-100 transition-colors border-2 border-teal-200"
                   onClick={() => setShowEmailCopy(!showEmailCopy)}
                 >
-                  <div className="text-2xl font-bold text-indigo-600">
+                  <div className="text-2xl font-bold text-teal-600">
                     📧
                   </div>
-                  <div className="text-sm text-indigo-800">Email Tools</div>
+                  <div className="text-sm text-teal-800">Email Tools</div>
                 </div>
               </div>
             )}
+
             {/* Email Tools Panel */}
             {showEmailCopy && selectedCount > 0 && (
-              <div className="mt-4 bg-indigo-50 rounded-xl p-4 border border-indigo-200">
-                <h3 className="text-lg font-semibold text-indigo-800 mb-3 flex items-center gap-2">
+              <div className="mt-4 bg-teal-50 rounded-xl p-4 border border-teal-200">
+                <h3 className="text-lg font-semibold text-teal-800 mb-3 flex items-center gap-2">
                   📧 Email Selected Interns ({selectedCount})
                 </h3>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={copySelectedEmails}
-                    className="px-4 py-2 bg-white text-indigo-700 border border-indigo-300 rounded-lg hover:bg-indigo-50 transition-colors font-medium flex items-center gap-2"
+                    className="px-4 py-2 bg-white text-teal-700 border border-teal-300 rounded-lg hover:bg-teal-50 transition-colors font-medium flex items-center gap-2"
                   >
                     📋 Copy All Emails
                   </button>
                   <button
                     onClick={openEmailClient}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center gap-2"
+                    className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium flex items-center gap-2"
                   >
                     ✉️ Open Email Client
                   </button>
-                  <div className="flex-1 bg-white rounded-lg px-3 py-2 border border-indigo-200 text-sm text-gray-600 flex items-center">
+                  <div className="flex-1 bg-white rounded-lg px-3 py-2 border border-teal-200 text-sm text-gray-600 flex items-center">
                     <span className="truncate">{getSelectedInternsEmails()}</span>
                   </div>
                 </div>
@@ -839,7 +1076,7 @@ const HRDashboard = () => {
             )}
 
             <h2 className="text-xl mt-4 font-semibold text-gray-800 mb-4">Filters & Search</h2>
-            <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-8 gap-4">
               <div className="md:col-span-2">
                 <input
                   type="text"
@@ -857,6 +1094,7 @@ const HRDashboard = () => {
               >
                 <option value="">All Status</option>
                 <option value="Applied">Applied</option>
+                <option value="Mailed">Mailed</option>
                 <option value="Selected">Selected</option>
                 <option value="Rejected">Rejected</option>
               </select>
@@ -870,9 +1108,8 @@ const HRDashboard = () => {
                 <option value="Excellent">Excellent</option>
                 <option value="Good">Good</option>
                 <option value="Average">Average</option>
-                <option value="Poor">Poor</option> {/* Add this line */}
+                <option value="Poor">Poor</option>
               </select>
-
 
               <select
                 value={selectedDomain}
@@ -893,7 +1130,6 @@ const HRDashboard = () => {
                 <option value="UI/UX Designing">UI/UX Designing</option>
                 <option value="Front-end Developer">Front-end Developer</option>
                 <option value="Back-end Developer">Back-end Developer</option>
-
               </select>
 
               <button
@@ -905,6 +1141,7 @@ const HRDashboard = () => {
               >
                 {showSelectedOnly ? '✅ Showing Selected' : '👥 Show All'}
               </button>
+
               <button
                 onClick={() => {
                   setSearch("");
@@ -917,8 +1154,6 @@ const HRDashboard = () => {
                 Clear Filters
               </button>
             </div>
-
-
 
             {/* Selected Only Notice */}
             {showSelectedOnly && (
@@ -960,7 +1195,7 @@ const HRDashboard = () => {
                 <thead className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
                   <tr>
                     <th className="p-4 text-left font-semibold">Intern Details</th>
-                    <th className="p-4 text-left font-semibold">Contact Info/apply Date</th>
+                    <th className="p-4 text-left font-semibold">Contact Info/Apply Date</th>
                     <th className="p-4 text-left font-semibold">Domain & Duration</th>
                     <th className="p-4 text-left font-semibold">College Info</th>
                     <th className="p-4 text-left font-semibold">Status</th>
@@ -1005,7 +1240,9 @@ const HRDashboard = () => {
                         <td className="p-4">
                           <div className="text-gray-700 text-sm">
                             📞 {intern.mobile || "Not provided"}
-                            <p className="text-xs font-bold">Applied : {intern.updatedAt ? new Date(intern.updatedAt).toLocaleDateString() : "Not provided"}</p>
+                            <p className="text-xs font-bold">
+                              Applied: {intern.createdAt ? new Date(intern.createdAt).toLocaleDateString() : "Not provided"}
+                            </p>
                             {intern.joiningDate && (
                               <p className="text-xs text-green-600 font-bold mt-1">
                                 Joining: {new Date(intern.joiningDate).toLocaleDateString()}
@@ -1026,14 +1263,12 @@ const HRDashboard = () => {
                           </div>
                         </td>
 
+                        {/* College */}
                         <td className="p-2 md:p-3">
                           <div className="min-h-[36px] flex items-center">
                             <div className="truncate-text-2-lines max-w-full">
-                              <span className={`
-                                 text-xs md:text-sm
-                                   ${intern.college ? "text-gray-600" : "text-gray-400 italic"}
-                                   transition-colors duration-100
-                                 `}>
+                              <span className={`text-xs md:text-sm ${intern.college ? "text-gray-600" : "text-gray-400 italic"
+                                } transition-colors duration-100`}>
                                 {intern.college || "—"}
                               </span>
                             </div>
@@ -1055,6 +1290,7 @@ const HRDashboard = () => {
                               }`}
                           >
                             <option value="Applied">Applied</option>
+                            <option value="Mailed">Mailed</option>
                             <option value="Selected">Selected</option>
                             <option value="Rejected">Rejected</option>
                           </select>
@@ -1064,9 +1300,6 @@ const HRDashboard = () => {
                             </div>
                           )}
                         </td>
-
-
-
 
                         {/* Performance with Update */}
                         <td className="p-4">
@@ -1085,7 +1318,7 @@ const HRDashboard = () => {
                             <option value="Average">Average</option>
                             <option value="Good">Good</option>
                             <option value="Excellent">Excellent</option>
-                            <option value="Poor">Poor</option> {/* Add this line */}
+                            <option value="Poor">Poor</option>
                           </select>
                           {isLocked && (
                             <div className="text-xs text-yellow-600 mt-1 no-print">
@@ -1094,15 +1327,15 @@ const HRDashboard = () => {
                           )}
                         </td>
 
-                        <td>
-                          {intern.TpoName}
+                        {/* TPO Name */}
+                        <td className="p-4">
+                          {intern.TpoName || "—"}
                         </td>
+
                         {/* Domain Update */}
                         <td className="p-3">
                           <div className="print-only">
-                            <span>
-                              {intern.domain}
-                            </span>
+                            <span>{intern.domain}</span>
                           </div>
                           <select
                             value={intern.domain}
@@ -1139,20 +1372,23 @@ const HRDashboard = () => {
                           <div className="flex gap-2">
                             <button
                               onClick={() => navigate(`/HR-Dashboard/intern/${intern._id}`)}
-                              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 font-medium text-xs"
+                              className="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 font-medium text-xs"
+                              title="View Details"
                             >
-                              <Eye />
+                              <Eye className="w-4 h-4" />
                             </button>
 
-                            <a
-                              href={intern.resumeUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
-                            >
-                              <FileText className="w-5 h-5" />
-                              Resume
-                            </a>
+                            {intern.resumeUrl && (
+                              <a
+                                href={intern.resumeUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium text-xs"
+                                title="View Resume"
+                              >
+                                <FileText className="w-4 h-4" />
+                              </a>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -1187,6 +1423,407 @@ const HRDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Send Interview Emails Modal */}
+      {showEmailModal && (
+        <div className="fixed inset-0 backdrop-blur-sm  bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-7xl w-full max-h-[90vh] overflow-hidden">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-800">Send Interview Emails</h2>
+              <button
+                onClick={() => {
+                  setShowEmailModal(false);
+                  setSelectedInterns([]);
+                  setSelectAll(false);
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto max-h-[70vh]">
+              {/* Intern Selection Table */}
+              {/* Intern Selection Table with Filters */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <Mail className="w-5 h-5" />
+                  Select Interns to Email ({getFilteredEmailInterns().filter(i => i.selected).length} selected of {selectedInterns.length} total)
+                </h3>
+
+                {/* Filter Controls */}
+                <div className="bg-gray-50 p-4 rounded-lg mb-4 space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {/* Search Input */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <input
+                        type="text"
+                        placeholder="Search by name, email, domain, college..."
+                        value={emailSearchTerm}
+                        onChange={(e) => setEmailSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    {/* Domain Filter Dropdown */}
+                    <select
+                      value={emailDomainFilter}
+                      onChange={(e) => setEmailDomainFilter(e.target.value)}
+                      className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+                    >
+                      <option value="">All Domains</option>
+                      {getUniqueDomains().map(domain => (
+                        <option key={domain} value={domain}>{domain}</option>
+                      ))}
+                    </select>
+
+                    {/* College Filter Input */}
+                    <input
+                      type="text"
+                      placeholder="Filter by college..."
+                      value={emailCollegeFilter}
+                      onChange={(e) => setEmailCollegeFilter(e.target.value)}
+                      className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  {/* Date Filter Section */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      onClick={() => setShowDateRange(!showDateRange)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${showDateRange
+                          ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                    >
+                      <Calendar className="w-4 h-4" />
+                      {showDateRange ? 'Date Range' : 'Single Date'}
+                    </button>
+
+                    {!showDateRange ? (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-500" />
+                        <input
+                          type="date"
+                          value={emailDateFilter}
+                          onChange={(e) => setEmailDateFilter(e.target.value)}
+                          className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="date"
+                          value={emailDateRange.from}
+                          onChange={(e) => setEmailDateRange({ ...emailDateRange, from: e.target.value })}
+                          className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          placeholder="From"
+                        />
+                        <span className="text-gray-500">to</span>
+                        <input
+                          type="date"
+                          value={emailDateRange.to}
+                          onChange={(e) => setEmailDateRange({ ...emailDateRange, to: e.target.value })}
+                          className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          placeholder="To"
+                        />
+                      </div>
+                    )}
+
+                    {/* Clear Filters Button */}
+                    {(emailSearchTerm || emailDomainFilter || emailCollegeFilter || emailDateFilter || emailDateRange.from || emailDateRange.to) && (
+                      <button
+                        onClick={() => {
+                          setEmailSearchTerm("");
+                          setEmailDomainFilter("");
+                          setEmailCollegeFilter("");
+                          setEmailDateFilter("");
+                          setEmailDateRange({ from: "", to: "" });
+                          setShowDateRange(false);
+                        }}
+                        className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium"
+                      >
+                        Clear Filters
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Filter Stats */}
+                  <div className="text-sm text-gray-600">
+                    Showing {getFilteredEmailInterns().length} of {selectedInterns.length} interns
+                  </div>
+                </div>
+
+                {/* Intern Table */}
+                <div className="border border-gray-200 rounded-lg overflow-hidden max-h-96 overflow-y-auto">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-gray-50 sticky top-0">
+                      <tr>
+                        <th className="p-3 text-left">
+                          <input
+                            type="checkbox"
+                            checked={getFilteredEmailInterns().every(i => i.selected) && getFilteredEmailInterns().length > 0}
+                            onChange={() => {
+                              const filteredInterns = getFilteredEmailInterns();
+                              const allSelected = filteredInterns.every(i => i.selected);
+
+                              setSelectedInterns(prev =>
+                                prev.map(intern => {
+                                  if (filteredInterns.some(fi => fi._id === intern._id)) {
+                                    return { ...intern, selected: !allSelected };
+                                  }
+                                  return intern;
+                                })
+                              );
+
+                              setSelectAll(!allSelected);
+                            }}
+                            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                        </th>
+                        <th className="p-3 text-left font-semibold text-gray-700">Name</th>
+                        <th className="p-3 text-left font-semibold text-gray-700">Email</th>
+                        <th className="p-3 text-left font-semibold text-gray-700">Domain</th>
+                        <th className="p-3 text-left font-semibold text-gray-700">College</th>
+                        <th className="p-3 text-left font-semibold text-gray-700">Applied Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {getFilteredEmailInterns().map((intern) => (
+                        <tr key={intern._id} className="hover:bg-gray-50">
+                          <td className="p-3">
+                            <input
+                              type="checkbox"
+                              checked={intern.selected}
+                              onChange={() => handleSelectIntern(intern._id)}
+                              className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            />
+                          </td>
+                          <td className="p-3 font-medium">{intern.fullName}</td>
+                          <td className="p-3 text-gray-600">{intern.email}</td>
+                          <td className="p-3">
+                            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                              {intern.domain || 'N/A'}
+                            </span>
+                          </td>
+                          <td className="p-3 text-gray-600">{intern.college || '-'}</td>
+                          <td className="p-3 text-gray-600">
+                            {intern.createdAt
+                              ? new Date(intern.createdAt).toLocaleDateString("en-IN", {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                              })
+                              : "-"}
+                          </td>
+                        </tr>
+                      ))}
+
+                      {getFilteredEmailInterns().length === 0 && (
+                        <tr>
+                          <td colSpan="6" className="p-8 text-center text-gray-500">
+                            No interns match your filters
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Email Form */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <Send className="w-5 h-5" />
+                  Email Details
+                </h3>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Subject Line
+                  </label>
+                  <input
+                    type="text"
+                    name="subject"
+                    value={emailForm.subject}
+                    onChange={handleEmailFormChange}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Meeting Link <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      name="meetingLink"
+                      value={emailForm.meetingLink}
+                      onChange={handleEmailFormChange}
+                      placeholder="https://meet.google.com/xxx-xxxx-xxx"
+                      className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                    <select
+                      name="meetingPlatform"
+                      value={emailForm.meetingPlatform}
+                      onChange={handleEmailFormChange}
+                      className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+                    >
+                      <option value="Google Meet">Google Meet</option>
+                      <option value="Zoom">Zoom</option>
+                      <option value="Microsoft Teams">Microsoft Teams</option>
+                      <option value="Skype">Skype</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Meeting Date <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      name="meetingDate"
+                      value={emailForm.meetingDate}
+                      onChange={handleEmailFormChange}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Meeting Time <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="time"
+                      name="meetingTime"
+                      value={emailForm.meetingTime}
+                      onChange={handleEmailFormChange}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Custom Message (Optional)
+                  </label>
+                  <textarea
+                    name="customMessage"
+                    value={emailForm.customMessage}
+                    onChange={handleEmailFormChange}
+                    rows="4"
+                    placeholder="Add any additional instructions or message for the candidates..."
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      HR Name
+                    </label>
+                    <input
+                      type="text"
+                      name="hrName"
+                      value={emailForm.hrName}
+                      onChange={handleEmailFormChange}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      HR Email
+                    </label>
+                    <input
+                      type="email"
+                      name="hrEmail"
+                      value={emailForm.hrEmail}
+                      onChange={handleEmailFormChange}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {/* Email Preview */}
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    Email Preview
+                  </h4>
+                  <div className="bg-white p-4 rounded-lg border border-gray-200 text-sm">
+                    <p><strong>Subject:</strong> {emailForm.subject}</p>
+                    <hr className="my-2" />
+                    <p>Dear [Intern Name],</p>
+                    <br />
+                    <p>Great news! We've reviewed your application for the internship program at <strong>Athenura</strong> and would love to move forward with an interview to get to know you better</p>
+                    <br />
+                    <p><strong>Interview Details:</strong></p>
+                    <p>📅 <strong>Domain:</strong> {emailForm.domain || '[Domain]'}</p>
+                    <p>📅 <strong>Date:</strong> {emailForm.meetingDate || '[Date not set]'}</p>
+                    <p>
+                      ⏰ <strong>Time:</strong>
+                      {emailForm.meetingTime ? formatTimeToAMPM(emailForm.meetingTime) : '[Time not set]'}
+                    </p>
+                    <p>💻 <strong>Platform:</strong> {emailForm.meetingPlatform}</p>
+                    <p>🔗 <strong>Meeting Link:</strong> {emailForm.meetingLink || '[Link not set]'}</p>
+                    <br />
+                    {emailForm.customMessage && (
+                      <>
+                        <p>{emailForm.customMessage}</p>
+                        <br />
+                      </>
+                    )}
+                    <br />
+                    <p>Best regards,</p>
+                    <p><strong>{emailForm.hrName}</strong></p>
+                    <p>HR Team</p>
+                    <p>Athenura</p>
+                    <p>{emailForm.hrEmail}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={sendInterviewEmails}
+                  disabled={emailLoading || selectedInterns.filter(i => i.selected).length === 0}
+                  className={`flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${emailLoading || selectedInterns.filter(i => i.selected).length === 0
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:bg-indigo-700'
+                    }`}
+                >
+                  {emailLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Sending Emails...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Send to {selectedInterns.filter(i => i.selected).length} Intern(s)
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowEmailModal(false);
+                    setSelectedInterns([]);
+                    setSelectAll(false);
+                  }}
+                  className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Import Interns Modal */}
       {showImportModal && (

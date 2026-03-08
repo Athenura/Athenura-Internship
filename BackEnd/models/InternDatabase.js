@@ -84,7 +84,7 @@ const internSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enums: ["Selected", "Rejected", "Applied"],
+        enums: ["Selected", "Rejected", "Applied", "Mailed"],
         default: 'Applied'
     },
     uniqueId: {

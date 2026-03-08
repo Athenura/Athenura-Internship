@@ -910,6 +910,7 @@ export const ToggleInchargeStatus = async (req, res) => {
     res.status(200).json({ message: `Incharge status updated to ${newStatus}`, incharge });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
+    
   }
 };
 
