@@ -477,20 +477,16 @@ export const sendInterviewEmail = async (req, res) => {
     const domains = Array.isArray(domain) ? domain : [domain];
 
     // Create HTML for domain list
-    let domainSections = "";
-
-    domains.forEach((d) => {
-      domainSections += `
-        <tr>
-          <td style="padding:10px;border:1px solid #ddd">${d}</td>
-          <td style="padding:10px;border:1px solid #ddd">${formattedDate}</td>
-          <td style="padding:10px;border:1px solid #ddd">${formattedTime}</td>
-          <td style="padding:10px;border:1px solid #ddd">
-            <a href="${meetingLink}">Join Meeting</a>
-          </td>
-        </tr>
-      `;
-    });
+    const domainSections = domains.map((d) => `
+<tr>
+  <td style="padding:10px;border:1px solid #ddd">${d}</td>
+  <td style="padding:10px;border:1px solid #ddd">${formattedDate}</td>
+  <td style="padding:10px;border:1px solid #ddd">${formattedTime}</td>
+  <td style="padding:10px;border:1px solid #ddd">
+    <a href="${meetingLink}">Join Meeting</a>
+  </td>
+</tr>
+`).join("");
 
     // Candidate Email
     const htmlContent = `
