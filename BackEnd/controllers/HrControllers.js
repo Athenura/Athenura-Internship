@@ -441,11 +441,13 @@ function formatTimeToAMPM(time) {
   return `${h}:${minutes} ${ampm}`;
 }
 
+
+
 export const sendInterviewEmail = async (req, res) => {
   try {
+
     const {
-      to,
-      toName,
+      interns,
       subject,
       meetingLink,
       meetingDate,
@@ -453,16 +455,8 @@ export const sendInterviewEmail = async (req, res) => {
       meetingPlatform,
       customMessage,
       hrName,
-      hrEmail,
-      domain
+      hrEmail
     } = req.body;
-
-    if (!to || !meetingLink || !meetingDate || !meetingTime) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing required fields",
-      });
-    }
 
     const formattedDate = new Date(meetingDate).toLocaleDateString("en-IN", {
       weekday: "long",
@@ -473,23 +467,26 @@ export const sendInterviewEmail = async (req, res) => {
 
     const formattedTime = formatTimeToAMPM(meetingTime);
 
-    // Convert domain to array if not already
-    const domains = Array.isArray(domain) ? domain : [domain];
+    // =========================
+    // DOMAIN COUNT
+    // =========================
 
-    // Create HTML for domain list
-    const domainSections = domains.map((d) => `
-<tr>
-  <td style="padding:10px;border:1px solid #ddd">${d}</td>
-  <td style="padding:10px;border:1px solid #ddd">${formattedDate}</td>
-  <td style="padding:10px;border:1px solid #ddd">${formattedTime}</td>
-  <td style="padding:10px;border:1px solid #ddd">
-    <a href="${meetingLink}">Join Meeting</a>
-  </td>
-</tr>
-`).join("");
+    const domainCount = {};
 
-    // Candidate Email
-    const htmlContent = `
+    interns.forEach(i => {
+      if (!domainCount[i.domain]) {
+        domainCount[i.domain] = 0;
+      }
+      domainCount[i.domain]++;
+    });
+
+    // =========================
+    // SEND EMAIL TO CANDIDATES
+    // =========================
+
+    for (const intern of interns) {
+
+      const htmlContent = `
 <div style="background:#f3f4f6;padding:40px 10px;font-family:Segoe UI,Tahoma,sans-serif;color:#374151;">
   
   <div style="max-width:640px;margin:auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 10px 25px rgba(0,0,0,0.08);">
@@ -505,7 +502,7 @@ export const sendInterviewEmail = async (req, res) => {
     <!-- Body -->
     <div style="padding:35px 30px;">
 
-      <p style="font-size:16px;">Dear <strong>${toName}</strong>,</p>
+      <p style="font-size:16px;">Dear <strong>${intern.name}</strong>,</p>
 
       <p style="font-size:15px;line-height:1.6;color:#4b5563;">
         Greetings from <strong>Athenura</strong>!  
@@ -525,7 +522,7 @@ export const sendInterviewEmail = async (req, res) => {
         <table style="width:100%;border-collapse:collapse;font-size:14px;">
           <tr>
             <td style="padding:6px 0;color:#6b7280;">Domain</td>
-            <td style="padding:6px 0;font-weight:600;color:#111827;">${domain}</td>
+            <td style="padding:6px 0;font-weight:600;color:#111827;">${intern.domain}</td>
           </tr>
           <tr>
             <td style="padding:6px 0;color:#6b7280;">Date</td>
@@ -585,11 +582,11 @@ export const sendInterviewEmail = async (req, res) => {
       </div>
 
       ${customMessage
-        ? `<div style="border-left:4px solid #4f46e5;padding-left:14px;margin:25px 0;color:#4b5563;font-style:italic;">
+          ? `<div style="border-left:4px solid #4f46e5;padding-left:14px;margin:25px 0;color:#4b5563;font-style:italic;">
               "${customMessage}"
             </div>`
-        : ""
-      }
+          : ""
+        }
 
       <p style="font-size:13px;color:#9ca3af;text-align:center;">
         Please join the meeting from a quiet location with a stable internet connection.
@@ -617,36 +614,50 @@ export const sendInterviewEmail = async (req, res) => {
 </div>
 `;
 
-    await sendEmail(to, subject, htmlContent);
+      await sendEmail(intern.email, subject, htmlContent);
 
-    // =============================
-    // SINGLE ADMIN EMAIL
-    // =============================
+    }
+
+    // =========================
+    // ADMIN EMAIL DOMAIN TABLE
+    // =========================
+
+    let rows = "";
+
+    for (const domain in domainCount) {
+
+      rows += `
+      <tr>
+      <td style="padding:10px;border:1px solid #ddd">${domain}</td>
+      <td style="padding:10px;border:1px solid #ddd">${domainCount[domain]}</td>
+      </tr>
+      `;
+    }
 
     const adminHtml = `
-<div style="font-family:Arial;padding:20px">
+    <div style="font-family:Arial;padding:20px">
 
-<h2>📢 Interview Schedule Notification</h2>
+    <h2>📢 Interview Schedule Summary</h2>
 
-<table style="border-collapse:collapse;width:100%;margin-top:20px">
+    <p><b>Date:</b> ${formattedDate}</p>
+    <p><b>Time:</b> ${formattedTime}</p>
+    <p><b>Meeting Link:</b> <a href="${meetingLink}">Join Meeting</a></p>
 
-<tr style="background:#f3f4f6">
-<th style="padding:10px;border:1px solid #ddd">Domain</th>
-<th style="padding:10px;border:1px solid #ddd">Date</th>
-<th style="padding:10px;border:1px solid #ddd">Time</th>
-<th style="padding:10px;border:1px solid #ddd">Meeting Link</th>
-</tr>
+    <h3>Domains & Candidates</h3>
 
-${domainSections}
+    <table style="border-collapse:collapse;width:100%">
 
-</table>
+    <tr style="background:#f3f4f6">
+    <th style="padding:10px;border:1px solid #ddd">Domain</th>
+    <th style="padding:10px;border:1px solid #ddd">Candidates</th>
+    </tr>
 
-<p style="margin-top:20px;color:gray">
-Automated mail from Athenura Internship System
-</p>
+    ${rows}
 
-</div>
-`;
+    </table>
+
+    </div>
+    `;
 
     await sendEmail(
       "mrsameersingh001@gmail.com",
@@ -655,17 +666,17 @@ Automated mail from Athenura Internship System
     );
 
     res.json({
-      success: true,
-      message: "Interview email sent successfully",
+      success: true
     });
 
   } catch (error) {
-    console.error("Interview email error:", error);
+
+    console.error(error);
+
     res.status(500).json({
       success: false,
-      message: "Failed to send interview email",
+      message: "Failed to send emails"
     });
+
   }
 };
-
-

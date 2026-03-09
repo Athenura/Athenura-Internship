@@ -135,17 +135,16 @@ const HRDashboard = () => {
     });
   };
 
+
   const sendInterviewEmails = async () => {
-    // Validate selections
-    const selectedToEmail = selectedInterns.filter(intern => intern.selected);
+
+    const selectedToEmail = selectedInterns.filter(i => i.selected);
 
     if (selectedToEmail.length === 0) {
-      setError("Please select at least one intern to email");
-      setTimeout(() => setError(""), 3000);
+      setError("Please select at least one intern");
       return;
     }
 
-    // Validate meeting link
     if (!emailForm.meetingLink) {
       setError("Please enter a meeting link");
       setTimeout(() => setError(""), 3000);
@@ -169,30 +168,33 @@ const HRDashboard = () => {
     setEmailLoading(true);
 
     try {
-      // Prepare email data for each selected intern
-      const emailPromises = selectedToEmail.map(async (intern) => {
-        const emailData = {
-          to: intern.email,
-          toName: intern.fullName,
-          subject: emailForm.subject,
-          meetingLink: emailForm.meetingLink,
-          meetingDate: emailForm.meetingDate,
-          meetingTime: emailForm.meetingTime,
-          meetingPlatform: emailForm.meetingPlatform,
-          customMessage: emailForm.customMessage,
-          hrName: emailForm.hrName,
-          hrEmail: emailForm.hrEmail,
-          internId: intern._id,
-          domain: intern.domain
-        };
 
-        // Send email via Brevo (SendinBlue)
-        const response = await axios.post("/api/hr/send-interview-email", emailData, {
-          withCredentials: true
-        });
+      const payload = {
+        interns: selectedToEmail.map(i => ({
+          email: i.email,
+          name: i.fullName,
+          domain: i.domain,
+          internId: i._id
+        })),
+        subject: emailForm.subject,
+        meetingLink: emailForm.meetingLink,
+        meetingDate: emailForm.meetingDate,
+        meetingTime: emailForm.meetingTime,
+        meetingPlatform: emailForm.meetingPlatform,
+        customMessage: emailForm.customMessage,
+        hrName: emailForm.hrName,
+        hrEmail: emailForm.hrEmail
+      };
 
-        // Update intern status to "Mailed" after successful email
-        if (response.data.success) {
+      const response = await axios.post(
+        "/api/hr/send-interview-email",
+        payload,
+        { withCredentials: true }
+      );
+
+      if (response.data.success) {
+
+        for (const intern of selectedToEmail) {
           await axios.put(
             `/api/hr/interns/${intern._id}/status`,
             { status: "Mailed" },
@@ -200,47 +202,16 @@ const HRDashboard = () => {
           );
         }
 
-        return response.data;
-      });
-
-      const results = await Promise.all(emailPromises);
-
-      // Check if all emails were sent successfully
-      const allSuccess = results.every(result => result.success);
-
-      if (allSuccess) {
-        setCopySuccess(`✅ Successfully sent interview emails to ${selectedToEmail.length} intern(s) and updated status to "Mailed"`);
-
-        // Refresh the interns list
-        await fetchInterns();
-
-        // Close modal after successful sending
-        setTimeout(() => {
-          setShowEmailModal(false);
-          setSelectedInterns([]);
-          setSelectAll(false);
-          setEmailForm({
-            subject: "Interview Invitation - Athenura Internship",
-            meetingLink: "",
-            meetingDate: "",
-            meetingTime: "",
-            meetingPlatform: "Google Meet",
-            customMessage: "",
-            hrName: storedUser?.fullName || "HR Team",
-            hrEmail: storedUser?.email || "hr@athenura.com"
-          });
-        }, 3000);
-      } else {
-        setError("Some emails failed to send. Please check the logs.");
+        setCopySuccess("Interview emails sent successfully!");
+        fetchInterns();
+        setShowEmailModal(false);
       }
+
     } catch (err) {
-      console.error("Error sending emails:", err);
-      setError("Failed to send emails: " + (err.response?.data?.message || err.message));
-    } finally {
-      setEmailLoading(false);
-      setTimeout(() => setCopySuccess(""), 5000);
-      setTimeout(() => setError(""), 5000);
+      setError("Failed to send emails", err);
     }
+
+    setEmailLoading(false);
   };
 
   // Import Functions
@@ -1493,8 +1464,8 @@ const HRDashboard = () => {
                     <button
                       onClick={() => setShowDateRange(!showDateRange)}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${showDateRange
-                          ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         }`}
                     >
                       <Calendar className="w-4 h-4" />
