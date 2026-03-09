@@ -576,7 +576,7 @@ Best regards,
  Athenura Team
 🌐 www.athenura.in`;
 
-    if (status == "Present"){
+    if (status == "Present") {
       await sendEmail(
         intern.email,
         `Athenura - Attendance Update for ${formattedDate}`,
@@ -915,7 +915,10 @@ export const ExtendedDays = async (req, res) => {
   }
 }
 
+
+
 // Helper function to calculate current end date
+
 const calculateCurrentEndDate = (intern) => {
   const joinDate = new Date(intern.joiningDate);
   const endDate = new Date(joinDate);
@@ -1049,8 +1052,7 @@ export const getInternPerformance = async (req, res) => {
       const joinDate = new Date(intern.joiningDate);
 
       // Calculate months based on time difference between joining and current end date
-      const monthsDiff = calculateMonthsBetweenDates(joinDate, currentEndDate);
-
+      const monthsDiff = calculateDurationInMonths(intern.duration);
       const monthlyPerformance = [];
 
       for (let i = 1; i <= monthsDiff; i++) {
@@ -1095,15 +1097,26 @@ export const getInternPerformance = async (req, res) => {
 
 // Helper function to calculate months between two dates
 const calculateMonthsBetweenDates = (date1, date2) => {
-  const months = (date2.getFullYear() - date1.getFullYear()) * 12;
-  return months + date2.getMonth() - date1.getMonth() + 1; // +1 to include current month
+  let months = (date2.getFullYear() - date1.getFullYear()) * 12;
+  months += date2.getMonth() - date1.getMonth();
+
+  if (date2.getDate() < date1.getDate()) {
+    months--;
+  }
+
+  return months;
 };
 
 const calculateDurationInMonths = (duration) => {
-  if (!duration) return 3; // Default to 3 months
+  if (!duration) return 3;
 
-  const match = duration.toString().match(/(\d+)\s*month/i);
-  return match ? parseInt(match[1]) : 3;
+  // Normalize string
+  const normalized = duration.toString().toLowerCase().trim();
+
+  // Extract number
+  const match = normalized.match(/\d+/);
+
+  return match ? parseInt(match[0]) : 3;
 };
 
 const calculateOverallPerformance = (monthlyPerformance) => {
